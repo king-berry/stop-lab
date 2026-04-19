@@ -1,0 +1,60 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage",
+    "description": "Homepage content"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "heroTagline": {
+      "type": "string"
+    },
+    "aboutHeadline": {
+      "type": "text"
+    },
+    "aboutDescription": {
+      "type": "text"
+    },
+    "aboutStat": {
+      "type": "string"
+    },
+    "aboutStatLabel": {
+      "type": "string"
+    },
+    "portalTitle": {
+      "type": "string"
+    },
+    "portalSubtitle": {
+      "type": "text"
+    },
+    "contactTitle": {
+      "type": "string"
+    },
+    "contactDescription": {
+      "type": "text"
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "contactPhone": {
+      "type": "string"
+    },
+    "footerTagline": {
+      "type": "string"
+    },
+    "footerAddress": {
+      "type": "text"
+    },
+    "heroImages": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}
