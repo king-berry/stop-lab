@@ -1,7 +1,5 @@
-const API = window.location.hostname === 'localhost'
-    ? 'http://localhost:1337/api'
-    : 'https://popular-activity-03995522d7.strapiapp.com/api';
-
+//const API = 'http://localhost:1337/api'; // local
+const API = 'https://popular-activity-03995522d7.strapiapp.com/api'; // production
 
 async function fetchJSON(url) {
     const res = await fetch(url);
@@ -34,7 +32,7 @@ async function loadHomepage() {
             const imgUrl = images[0].url;
             document.getElementById('hero-img').src = imgUrl.startsWith('http')
                 ? imgUrl
-                : `http://localhost:1337${imgUrl}`;
+                : `${API.replace('/api', '')}${imgUrl}`;
         }
     } catch (e) {
         console.warn('Homepage load failed:', e.message);
@@ -86,7 +84,7 @@ async function loadProperties() {
 
         container.innerHTML = first2.map(p => {
             const imgUrl = p.image?.url
-                ? (p.image.url.startsWith('http') ? p.image.url : `http://localhost:1337${p.image.url}`)
+                ? (p.image.url.startsWith('http') ? p.image.url : `${API.replace('/api', '')}${p.image.url}`)
                 : 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
             return `
                 <div class="property-card">
@@ -102,7 +100,7 @@ async function loadProperties() {
 
         if (third && thirdContainer) {
             const imgUrl = third.image?.url
-                ? (third.image.url.startsWith('http') ? third.image.url : `http://localhost:1337${third.image.url}`)
+                ? (third.image.url.startsWith('http') ? third.image.url : `${API.replace('/api', '')}${third.image.url}`)
                 : 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
             thirdContainer.innerHTML = `
                 <img src="${imgUrl}" alt="${third.name}">
@@ -126,7 +124,7 @@ async function loadTestimonials() {
         if (!container || !data) return;
         container.innerHTML = data.map(t => {
             const avatarUrl = t.avatar?.url
-                ? (t.avatar.url.startsWith('http') ? t.avatar.url : `http://localhost:1337${t.avatar.url}`)
+                ? (t.avatar.url.startsWith('http') ? t.avatar.url : `${API.replace('/api', '')}${t.avatar.url}`)
                 : `https://i.pravatar.cc/40?u=${t.authorName}`;
             return `
                 <div class="testimonial-card">
