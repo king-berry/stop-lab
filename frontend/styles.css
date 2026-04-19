@@ -440,15 +440,31 @@ body {
     gap: 48px;
 }
 
-.property-card img {
+.property-img-wrap img {
     width: 100%;
     height: 180px;
     object-fit: cover;
     border-radius: 6px;
-    margin-bottom: 12px;
     display: block;
     max-width: 320px;
+    transition: filter 0.1s ease;
 }
+
+.property-card {
+    position: relative;
+}
+
+.property-img-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 12px;
+    max-width: 320px;
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+
 
 .property-meta {
     display: flex;
@@ -531,6 +547,7 @@ body {
     border-radius: 6px;
     margin-bottom: 12px;
     display: block;
+    margin-top: 20px;
 }
 
 .property-third .property-meta {

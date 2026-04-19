@@ -1,5 +1,6 @@
-//const API = 'http://localhost:1337/api'; // local
-const API = 'https://popular-activity-03995522d7.strapiapp.com/api'; // production
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:1337/api'
+    : 'https://popular-activity-03995522d7.strapiapp.com/api';
 
 async function fetchJSON(url) {
     const res = await fetch(url);
@@ -88,7 +89,9 @@ async function loadProperties() {
                 : 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
             return `
                 <div class="property-card">
-                    <img src="${imgUrl}" alt="${p.name}">
+                    <div class="property-img-wrap">
+                        <img src="${imgUrl}" alt="${p.name}">
+                    </div>
                     <div class="property-meta">
                         <span>${p.category}</span>
                         <span>${p.size || ''}</span>
@@ -103,7 +106,9 @@ async function loadProperties() {
                 ? (third.image.url.startsWith('http') ? third.image.url : `${API.replace('/api', '')}${third.image.url}`)
                 : 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
             thirdContainer.innerHTML = `
-                <img src="${imgUrl}" alt="${third.name}">
+                <div class="property-img-wrap">
+                    <img src="${imgUrl}" alt="${third.name}">
+                </div>
                 <div class="property-meta">
                     <span>${third.category}</span>
                     <span>${third.size || ''}</span>
@@ -178,7 +183,31 @@ function initScrollAnimations() {
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 }
 
-document.addEventListener('DOMContentLoaded', initScrollAnimations);
+// ── Scroll blur on property images ────────────────────────
+function initScrollBlur() {
+    const handleScroll = () => {
+        document.querySelectorAll('.property-img-wrap img').forEach(img => {
+            const rect = img.getBoundingClientRect();
+            const viewH = window.innerHeight;
+            // khoảng cách từ tâm ảnh đến tâm màn hình
+            const imgCenter = rect.top + rect.height / 2;
+            const screenCenter = viewH / 2;
+            const distance = Math.abs(imgCenter - screenCenter);
+            const maxDist = viewH / 2;
+            // blur tối đa 8px khi ảnh ở rìa, 0 khi ở giữa
+            const blur = Math.min(4, (distance / maxDist) * 4);
+            img.style.filter = `blur(${blur}px)`;
+        });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initScrollAnimations();
+    initScrollBlur();
+});
 
 // ── Contact Form ──────────────────────────────────────────
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
