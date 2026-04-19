@@ -10,7 +10,8 @@ const config: Core.Config.Middlewares = [
       origin: [
         'http://localhost:3000',
         'http://localhost:5000',
-        'https://your-project.vercel.app', // thay bằng URL Vercel thực tế
+        'https://stop-lab.vercel.app',
+        'https://popular-activity-03995522d7.strapiapp.com',
       ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization'],

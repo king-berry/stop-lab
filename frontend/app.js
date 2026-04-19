@@ -1,4 +1,4 @@
-const API = 'http://localhost:1337/api';
+const API = 'https://popular-activity-03995522d7.strapiapp.com/api';
 
 async function fetchJSON(url) {
     const res = await fetch(url);
