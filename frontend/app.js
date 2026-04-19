@@ -1,5 +1,7 @@
-const API = 'http://localhost:1337/api'; // local
-// const API = 'https://popular-activity-03995522d7.strapiapp.com/api'; // production
+const API = window.location.hostname === 'localhost'
+    ? 'http://localhost:1337/api'
+    : 'https://popular-activity-03995522d7.strapiapp.com/api';
+
 
 async function fetchJSON(url) {
     const res = await fetch(url);
