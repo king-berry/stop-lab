@@ -1,4 +1,5 @@
-const API = 'https://popular-activity-03995522d7.strapiapp.com/api';
+const API = 'http://localhost:1337/api'; // local
+// const API = 'https://popular-activity-03995522d7.strapiapp.com/api'; // production
 
 async function fetchJSON(url) {
     const res = await fetch(url);
@@ -178,3 +179,42 @@ function initScrollAnimations() {
 }
 
 document.addEventListener('DOMContentLoaded', initScrollAnimations);
+
+// ── Contact Form ──────────────────────────────────────────
+const SHEET_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+document.querySelector('.submit-btn').addEventListener('click', async () => {
+    const firstName = document.querySelector('.form-row .form-group:first-child input').value.trim();
+    const lastName  = document.querySelector('.form-row .form-group:last-child input').value.trim();
+    const email     = document.querySelector('input[type="email"]').value.trim();
+    const area      = document.querySelector('select').value;
+    const message   = document.querySelector('textarea').value.trim();
+    const agreed    = document.getElementById('terms').checked;
+
+    if (!firstName || !email) {
+        alert('Please fill in First Name and Email.');
+        return;
+    }
+    if (!agreed) {
+        alert('Please agree to the Terms & Privacy Policy.');
+        return;
+    }
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'SENDING...';
+    btn.disabled = true;
+
+    try {
+        await fetch(SHEET_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
+        });
+        btn.textContent = 'SENT ✓';
+        document.querySelector('.contact-form').reset();
+    } catch (err) {
+        btn.textContent = 'ERROR — TRY AGAIN';
+        btn.disabled = false;
+    }
+});
