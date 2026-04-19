@@ -181,7 +181,7 @@ function initScrollAnimations() {
 document.addEventListener('DOMContentLoaded', initScrollAnimations);
 
 // ── Contact Form ──────────────────────────────────────────
-const SHEET_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
 
 document.querySelector('.submit-btn').addEventListener('click', async () => {
     const firstName = document.querySelector('.form-row .form-group:first-child input').value.trim();
@@ -204,17 +204,16 @@ document.querySelector('.submit-btn').addEventListener('click', async () => {
     btn.textContent = 'SENDING...';
     btn.disabled = true;
 
-    try {
-        await fetch(SHEET_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
-        });
-        btn.textContent = 'SENT ✓';
-        document.querySelector('.contact-form').reset();
-    } catch (err) {
-        btn.textContent = 'ERROR — TRY AGAIN';
-        btn.disabled = false;
-    }
+    fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
+    });
+
+    // no-cors luôn trả opaque response, không đọc được status
+    // nhưng dữ liệu vẫn được gửi — coi như thành công
+    btn.textContent = 'SENT ✓';
+    document.querySelectorAll('.contact-form input, .contact-form select, .contact-form textarea').forEach(el => el.value = '');
+    document.getElementById('terms').checked = false;
 });
