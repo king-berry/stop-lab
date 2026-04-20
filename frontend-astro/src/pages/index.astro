@@ -1,0 +1,394 @@
+---
+const API = 'https://popular-activity-03995522d7.strapiapp.com/api';
+
+async function fetchData(endpoint) {
+  try {
+    const res = await fetch(`${API}${endpoint}`);
+    if (!res.ok) {
+      console.error(`Failed to fetch ${endpoint}: ${res.status}`);
+      return { data: null };
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error(`${endpoint} returned non-JSON response`);
+      return { data: null };
+    }
+    return await res.json();
+  } catch (err) {
+    console.error(`Error fetching ${endpoint}:`, err.message);
+    return { data: null };
+  }
+}
+
+// Fetch all data at build time
+const homepage = await fetchData('/homepage?populate=heroImages');
+const regions = await fetchData('/regions');
+const stats = await fetchData('/statistics?sort=order:asc');
+const properties = await fetchData('/properties?populate=image');
+const testimonials = await fetchData('/testimonials?populate=avatar');
+
+const h = homepage.data || {
+  aboutHeadline: "We commit ourselves entirely to our partners and the solutions we deliver, bringing unmatched expertise.",
+  aboutDescription: "We are a comprehensive property consultancy specializing in residential and commercial assets.",
+  aboutStat: "750+",
+  portalTitle: "A PORTAL TO PROFOUND ARCHITECTURAL ENVIRONMENTS",
+  portalSubtitle: "Transforming visionary designs <strong>into tangible forms with <span class='accent-warm'>flawless execution.</span></strong>",
+  contactTitle: "LET'S BUILD THE FUTURE TOGETHER.",
+  contactDescription: "Connect with our principal architects and regional directors to explore tailored solutions for your next venture.",
+  contactEmail: "hello@nexus.com",
+  contactPhone: "+1 (555) 123-4567",
+  footerTagline: "EXCELLENCE // INTEGRATION // LONGEVITY",
+  footerAddress: "880 INNOVATION WAY, SUITE 400\nAUSTIN, TEXAS 78701"
+};
+const heroImage = h.heroImages?.[0]?.url || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80';
+const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('/api', '')}${heroImage}`;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Architecture</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style is:global>
+        @import '../styles.css';
+    </style>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav class="navbar">
+        <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links">
+            <a href="#">Offices</a>
+            <a href="#">Offerings</a>
+            <a href="#">Developments</a>
+            <a href="#">Vision</a>
+            <a href="#">Our Story</a>
+        </div>
+        <a href="#contact" class="nav-cta">GET IN TOUCH ↗</a>
+    </nav>
+    
+    <div class="mobile-menu">
+        <a href="#">Offices</a>
+        <a href="#">Offerings</a>
+        <a href="#">Developments</a>
+        <a href="#">Vision</a>
+        <a href="#">Our Story</a>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-logo">NEXUS<sup>®</sup></div>
+        <div class="hero-image">
+            <img id="hero-img" src={heroImageUrl} alt="Nexus Architecture Hero">
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about fade-up">
+        <div class="about-headline">
+            {h.aboutHeadline}
+        </div>
+        <div class="about-body">
+            <div class="about-tag"><span class="dot">●</span> OUR IDENTITY</div>
+            <div class="about-desc">
+                <p>{h.aboutDescription}</p>
+                <a href="#contact" class="underline-link">CONNECT WITH US ↗</a>
+            </div>
+            <div class="about-stat">{h.aboutStat}</div>
+        </div>
+        <div class="about-footer">
+            <span>BEYOND CONVENTIONAL REAL ESTATE.</span>
+            <div class="about-images">
+                <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&q=80" alt="">
+                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=200&q=80" alt="">
+                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=200&q=80" alt="">
+            </div>
+            <span>WE FORGE TRUST.</span>
+        </div>
+    </section>
+
+
+    <!-- PORTAL -->
+    <section class="portal fade-up">
+        <div class="portal-left">
+            <h2>{h.portalTitle}</h2>
+            <p set:html={h.portalSubtitle}></p>
+            <div class="search-box">
+                <span>📍</span>
+                <input type="text" placeholder="Search region...">
+            </div>
+            <div class="region-tags">
+                {regions.data?.map(r => <span>{r.name.toUpperCase()}</span>)}
+            </div>
+            <div class="portal-bottom">
+                <div class="partner-card">
+                    <div class="partner-label">Certified Partner</div>
+                    <div class="partner-name">VANGUARD</div>
+                </div>
+                <div class="partner-info">
+                    <p class="partner-desc">Leveraging extensive regional intelligence and a partner-centric strategy, we navigate investors seamlessly.</p>
+                    <a href="#" class="underline-link light">EXPLORE DETAILS ↗</a>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-badge">● HIGHLIGHTED PROPERTIES</div>
+        <div class="portal-right">
+            <div class="portal-decor">
+                <div class="portal-decor-box">
+                    <div class="portal-arrow"></div>
+                    <div class="portal-arrow"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats fade-up">
+        {stats.data?.map(s => (
+            <div class="stat-card">
+                <div class="stat-arrow">↗</div>
+                <div class="stat-number">{s.number}<span class="stat-unit">{s.unit || ''}</span></div>
+                <p>{s.description}</p>
+            </div>
+        ))}
+    </section>
+
+    <!-- CRAFTED -->
+    <section class="crafted fade-up">
+        <div class="crafted-label">[ HEADQUARTERED IN ]</div>
+        <div class="crafted-right">
+            <h2 class="crafted-title">CRAFTED WITH INTENT</h2>
+            <p class="crafted-desc">Explore exclusive assets in the most coveted districts. From contemporary urban lofts to secluded retreats, we curate spaces that align with your aspirations.</p>
+        </div>
+    </section>
+
+    <!-- PROPERTIES -->
+    <section class="properties">
+        {properties.data?.slice(0, 2).map(p => {
+            const imgUrl = p.image?.url 
+                ? (p.image.url.startsWith('http') ? p.image.url : `${API.replace('/api', '')}${p.image.url}`)
+                : 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
+            return (
+                <div class="property-card">
+                    <div class="property-img-wrap">
+                        <img src={imgUrl} alt={p.name}>
+                    </div>
+                    <div class="property-meta">
+                        <span>{p.category}</span>
+                        <span>{p.size || ''}</span>
+                    </div>
+                    <div class="property-name">{p.name}</div>
+                </div>
+            );
+        })}
+    </section>
+
+    <!-- EMBODIES -->
+    <section class="embodies-section">
+        <div class="embodies-stat">
+            <div class="embodies-number">8</div>
+            <div class="embodies-stat-label">VISIONARIES FROM THE<br>STUDIO</div>
+        </div>
+        <div class="embodies-center">
+            <h3>EMBODIES THE<br>RAW ESSENCE</h3>
+            <a href="#" class="underline-link light">BROWSE PORTFOLIO ↗</a>
+        </div>
+        {properties.data?.[2] && (() => {
+            const p = properties.data[2];
+            const imgUrl = p.image?.url 
+                ? (p.image.url.startsWith('http') ? p.image.url : `${API.replace('/api', '')}${p.image.url}`)
+                : 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
+            return (
+                <div class="property-third">
+                    <div class="property-img-wrap">
+                        <img src={imgUrl} alt={p.name}>
+                    </div>
+                    <div class="property-meta">
+                        <span>{p.category}</span>
+                        <span>{p.size || ''}</span>
+                    </div>
+                    <div class="property-name">{p.name}</div>
+                </div>
+            );
+        })()}
+    </section>
+
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials fade-up">
+        <div class="testimonials-header">
+            <h2>ENDORSEMENTS FROM<br>OUR PARTNERS</h2>
+            <span class="bracket-tag">[ CLIENT PERSPECTIVES ]</span>
+        </div>
+        <div class="testimonials-grid">
+            {testimonials.data?.map(t => {
+                const avatarUrl = t.avatar?.url
+                    ? (t.avatar.url.startsWith('http') ? t.avatar.url : `${API.replace('/api', '')}${t.avatar.url}`)
+                    : `https://i.pravatar.cc/40?u=${t.authorName}`;
+                return (
+                    <div class="testimonial-card">
+                        <p>"{t.quote}"</p>
+                        <div class="testimonial-author">
+                            <img src={avatarUrl} alt={t.authorName}>
+                            <div>
+                                <div class="author-name">{t.authorName}</div>
+                                <div class="author-title">{t.authorTitle || ''}{t.authorCompany ? ', ' + t.authorCompany.toUpperCase() : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact fade-up" id="contact">
+        <div class="contact-left">
+            <div class="bracket-tag light">[ INITIATE DIALOGUE ]</div>
+            <h2>{h.contactTitle}</h2>
+            <p>{h.contactDescription}</p>
+            <div class="contact-info">
+                <div>
+                    <div class="info-label">GENERAL INQUIRIES</div>
+                    <div class="info-value">{h.contactEmail}</div>
+                </div>
+                <div>
+                    <div class="info-label">DIRECT LINE</div>
+                    <div class="info-value">{h.contactPhone}</div>
+                </div>
+            </div>
+        </div>
+        <div class="contact-form">
+            <div class="form-row">
+                <div class="form-group"><label>FIRST NAME</label><input type="text"></div>
+                <div class="form-group"><label>LAST NAME</label><input type="text"></div>
+            </div>
+            <div class="form-group"><label>EMAIL ADDRESS</label><input type="email"></div>
+            <div class="form-group">
+                <label>AREA OF INTEREST</label>
+                <select>
+                    <option>Select an option...</option>
+                    <option>Residential</option>
+                    <option>Commercial</option>
+                    <option>Development</option>
+                </select>
+            </div>
+            <div class="form-group"><label>MESSAGE</label><textarea rows="4"></textarea></div>
+            <div class="form-check">
+                <input type="checkbox" id="terms">
+                <label for="terms">I agree to the Terms &amp; Privacy Policy</label>
+            </div>
+            <button class="submit-btn">SUBMIT INQUIRY ↗</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-left">
+            <div>FOUNDED '18</div>
+            <div class="footer-copy">ALL RIGHTS RETAINED.<br>©2024 NEXUS GROUP</div>
+        </div>
+        <div class="footer-center">
+            <div>{h.footerTagline}</div>
+            <div set:html={h.footerAddress?.replace(/\n/g, '<br>')}></div>
+        </div>
+        <div class="footer-right">
+            <div>DIRECTORY</div>
+            <div class="footer-links">
+                <a href="#">INSTAGRAM</a>
+                <a href="#">LINKEDIN</a>
+            </div>
+            <a href="#">TERMS &amp; PRIVACY</a>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        const menu = document.querySelector('.mobile-menu');
+        
+        toggle?.addEventListener('click', () => {
+            menu?.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!toggle?.contains(e.target) && !menu?.contains(e.target)) {
+                menu?.classList.remove('active');
+            }
+        });
+        
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+        
+        // Scroll blur effect
+        const handleScroll = () => {
+            document.querySelectorAll('.property-img-wrap img').forEach(img => {
+                const rect = img.getBoundingClientRect();
+                const viewH = window.innerHeight;
+                const imgCenter = rect.top + rect.height / 2;
+                const screenCenter = viewH / 2;
+                const distance = Math.abs(imgCenter - screenCenter);
+                const maxDist = viewH / 2;
+                const blur = Math.min(4, (distance / maxDist) * 4);
+                img.style.filter = `blur(${blur}px)`;
+            });
+        };
+        
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        
+        // Contact form
+        const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
+        
+        document.querySelector('.submit-btn')?.addEventListener('click', async () => {
+            const firstName = document.querySelector('.form-row .form-group:first-child input').value.trim();
+            const lastName  = document.querySelector('.form-row .form-group:last-child input').value.trim();
+            const email     = document.querySelector('input[type="email"]').value.trim();
+            const area      = document.querySelector('select').value;
+            const message   = document.querySelector('textarea').value.trim();
+            const agreed    = document.getElementById('terms').checked;
+            
+            if (!firstName || !email) {
+                alert('Please fill in First Name and Email.');
+                return;
+            }
+            if (!agreed) {
+                alert('Please agree to the Terms & Privacy Policy.');
+                return;
+            }
+            
+            const btn = document.querySelector('.submit-btn');
+            btn.textContent = 'SENDING...';
+            btn.disabled = true;
+            
+            fetch(SHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
+            });
+            
+            btn.textContent = 'SENT ✓';
+            document.querySelectorAll('.contact-form input, .contact-form select, .contact-form textarea').forEach(el => el.value = '');
+            document.getElementById('terms').checked = false;
+        });
+    </script>
+
+</body>
+</html>
