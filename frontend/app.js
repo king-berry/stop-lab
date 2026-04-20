@@ -2,10 +2,26 @@ const API = window.location.hostname === 'localhost' || window.location.hostname
     ? 'http://localhost:1337/api'
     : 'https://popular-activity-03995522d7.strapiapp.com/api';
 
+console.log('Using API:', API);
+console.log('Hostname:', window.location.hostname);
+
 async function fetchJSON(url) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch ${url}`);
-    return res.json();
+    console.log('Fetching:', url);
+    try {
+        const res = await fetch(url);
+        console.log('Response status:', res.status);
+        if (!res.ok) {
+            const text = await res.text();
+            console.error('Fetch failed:', res.status, res.statusText, text);
+            throw new Error(`Failed to fetch ${url}: ${res.status}`);
+        }
+        const data = await res.json();
+        console.log('Data received:', data);
+        return data;
+    } catch (err) {
+        console.error('Fetch error:', err);
+        throw err;
+    }
 }
 
 // ── Homepage ──────────────────────────────────────────────
@@ -207,7 +223,37 @@ function initScrollBlur() {
 document.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     initScrollBlur();
+    initMobileMenu();
 });
+
+// ── Mobile Menu ───────────────────────────────────────────
+function initMobileMenu() {
+    const toggle = document.querySelector('.mobile-menu-toggle');
+    const menu = document.querySelector('.mobile-menu');
+    
+    if (!toggle || !menu) return;
+    
+    toggle.addEventListener('click', () => {
+        menu.classList.toggle('active');
+        toggle.classList.toggle('active');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.remove('active');
+            toggle.classList.remove('active');
+        }
+    });
+    
+    // Close menu when clicking a link
+    menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            menu.classList.remove('active');
+            toggle.classList.remove('active');
+        });
+    });
+}
 
 // ── Contact Form ──────────────────────────────────────────
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
