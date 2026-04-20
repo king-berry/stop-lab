@@ -192,11 +192,100 @@ body {
     padding: 60px 48px;
     position: relative;
     overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 0 60px;
+    align-items: center;
+}
+
+.portal-left {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    max-width: 480px;
+}
+
+.highlight-badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+}
+
+.portal-right {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portal-decor {
+    width: 100%;
+    height: 400px;
+    border-radius: 18px;
+    background: #3a3530;
+    background-image: repeating-linear-gradient(
+        17deg,
+        transparent 0px,
+        transparent 70px,
+        rgba(180,150,80,0.07) 70px,
+        rgba(180,150,80,0.07) 71px
+    );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-decor-box {
+    width: 88px;
+    height: 88px;
+    border-radius: 20px;
+    border: 4px solid rgba(255,255,255,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.05);
+    transform: rotate(17deg);
+}
+
+.portal-arrow {
+    width: 22px;
+    height: 12px;
+    position: relative;
+    transform: rotate(-1deg);
+}
+
+.portal-arrow::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-right: 2.5px solid rgba(255,255,255,0.55);
+    border-top: 2.5px solid rgba(255,255,255,0.55);
+    transform: translateX(-50%) rotate(-45deg);
+}
+
+.portal-arrow:last-child::before {
+    opacity: 0.35;
 }
 
 /* Decor bên phải - removed */
-
-.portal-left { max-width: 480px; }
 
 .portal h2 {
     font-size: clamp(28px, 3.5vw, 48px);
@@ -264,19 +353,20 @@ body {
     gap: 20px;
 }
 
-.highlight-badge {
-    position: absolute;
-    top: 60px;
-    right: 48px;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 20px;
-    padding: 6px 14px;
-    color: rgba(255,255,255,0.7);
+.portal-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
-.portal-right { display: none; }
+.portal-right img {
+    width: 100%;
+    max-width: 420px;
+    height: 480px;
+    object-fit: cover;
+    border-radius: 8px;
+}
 
 .partner-card {
     border: 1px solid rgba(255,255,255,0.12);
@@ -581,7 +671,7 @@ body {
 
 .testimonials-header h2 {
     font-size: clamp(28px, 4vw, 52px);
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.1;
     letter-spacing: -1px;
 }
@@ -601,21 +691,29 @@ body {
 }
 
 .testimonial-card {
-    background: var(--white);
+    background: rgba(255,255,255,0.15);
     border: 1px solid rgba(0,0,0,0.08);
     border-radius: 12px;
-    padding: 32px;
+    padding: 48px 32px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 24px;
+    transition: border-color 0.3s ease;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.testimonial-card:hover {
+    border-color: rgba(0,0,0,0.4);
 }
 
 .testimonial-card p {
     font-size: 14px;
-    color: #444;
+    color: #555;
     line-height: 1.7;
     flex: 1;
+    font-style: italic;
 }
 
 .testimonial-author {
