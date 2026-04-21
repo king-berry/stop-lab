@@ -143,9 +143,10 @@ const testimonials = testimonialsData?.items || [];
         <div class="about-footer">
             <span>BEYOND CONVENTIONAL REAL ESTATE.</span>
             <div class="about-images">
-                <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&q=80" alt="">
-                <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=200&q=80" alt="">
-                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=200&q=80" alt="">
+                {(hRaw.aboutImages || []).map((img: any) => {
+                    const url = getAssetUrl(assets, img?.sys?.id);
+                    return url ? <img src={url} alt=""> : null;
+                })}
             </div>
             <span>WE FORGE TRUST.</span>
         </div>
