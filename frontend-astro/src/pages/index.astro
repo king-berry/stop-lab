@@ -19,6 +19,19 @@ async function fetchContentful(contentType, params = '') {
   }
 }
 
+async function fetchAllAssets() {
+  try {
+    const res = await fetch(`${CDA}/assets?limit=200`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.items || [];
+  } catch (err) {
+    return [];
+  }
+}
+
 function getAssetUrl(assets, assetId) {
   if (!assets || !assetId) return null;
   const asset = assets.find(a => a.sys.id === assetId);
@@ -26,15 +39,17 @@ function getAssetUrl(assets, assetId) {
 }
 
 // Fetch all data at build time
-const [homepageData, regionsData, statsData, propertiesData, testimonialsData] = await Promise.all([
+const [homepageData, regionsData, statsData, propertiesData, testimonialsData, allAssets] = await Promise.all([
   fetchContentful('homepage'),
   fetchContentful('region'),
   fetchContentful('statistic', '&order=fields.order'),
   fetchContentful('property'),
   fetchContentful('testimonial'),
+  fetchAllAssets(),
 ]);
 
 const assets = [
+  ...allAssets,
   ...(homepageData?.includes?.assets || []),
   ...(propertiesData?.includes?.assets || []),
   ...(testimonialsData?.includes?.assets || []),
@@ -42,6 +57,7 @@ const assets = [
 
 const hRaw = homepageData?.items?.[0]?.fields || {};
 const h = {
+  siteName: hRaw.siteName || "NEXUS",
   aboutHeadline: hRaw.aboutHeadline || "We commit ourselves entirely to our partners and the solutions we deliver, bringing unmatched expertise.",
   aboutDescription: hRaw.aboutDescription || "We are a comprehensive property consultancy specializing in residential and commercial assets.",
   aboutStat: hRaw.aboutStat || "750+",
