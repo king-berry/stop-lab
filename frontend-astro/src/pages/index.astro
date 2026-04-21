@@ -1,47 +1,67 @@
 ---
-const API = 'https://popular-activity-03995522d7.strapiapp.com/api';
+const SPACE_ID = 'yo5cnbbvoxyx';
+const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
 
-async function fetchData(endpoint) {
+async function fetchContentful(contentType, params = '') {
   try {
-    const res = await fetch(`${API}${endpoint}`);
+    const res = await fetch(`${CDA}/entries?content_type=${contentType}&include=2${params}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
     if (!res.ok) {
-      console.error(`Failed to fetch ${endpoint}: ${res.status}`);
-      return { data: null };
-    }
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error(`${endpoint} returned non-JSON response`);
-      return { data: null };
+      console.error(`Failed to fetch ${contentType}: ${res.status}`);
+      return null;
     }
     return await res.json();
   } catch (err) {
-    console.error(`Error fetching ${endpoint}:`, err.message);
-    return { data: null };
+    console.error(`Error fetching ${contentType}:`, err.message);
+    return null;
   }
 }
 
-// Fetch all data at build time
-const homepage = await fetchData('/homepage?populate=heroImages');
-const regions = await fetchData('/regions');
-const stats = await fetchData('/statistics?sort=order:asc');
-const properties = await fetchData('/properties?populate=image');
-const testimonials = await fetchData('/testimonials?populate=avatar');
+function getAssetUrl(assets, assetId) {
+  if (!assets || !assetId) return null;
+  const asset = assets.find(a => a.sys.id === assetId);
+  return asset ? `https:${asset.fields.file.url}` : null;
+}
 
-const h = homepage.data || {
-  aboutHeadline: "We commit ourselves entirely to our partners and the solutions we deliver, bringing unmatched expertise.",
-  aboutDescription: "We are a comprehensive property consultancy specializing in residential and commercial assets.",
-  aboutStat: "750+",
-  portalTitle: "A PORTAL TO PROFOUND ARCHITECTURAL ENVIRONMENTS",
-  portalSubtitle: "Transforming visionary designs <strong>into tangible forms with <span class='accent-warm'>flawless execution.</span></strong>",
-  contactTitle: "LET'S BUILD THE FUTURE TOGETHER.",
-  contactDescription: "Connect with our principal architects and regional directors to explore tailored solutions for your next venture.",
-  contactEmail: "hello@nexus.com",
-  contactPhone: "+1 (555) 123-4567",
-  footerTagline: "EXCELLENCE // INTEGRATION // LONGEVITY",
-  footerAddress: "880 INNOVATION WAY, SUITE 400\nAUSTIN, TEXAS 78701"
+// Fetch all data at build time
+const [homepageData, regionsData, statsData, propertiesData, testimonialsData] = await Promise.all([
+  fetchContentful('homepage'),
+  fetchContentful('region'),
+  fetchContentful('statistic', '&order=fields.order'),
+  fetchContentful('property'),
+  fetchContentful('testimonial'),
+]);
+
+const assets = [
+  ...(homepageData?.includes?.assets || []),
+  ...(propertiesData?.includes?.assets || []),
+  ...(testimonialsData?.includes?.assets || []),
+];
+
+const hRaw = homepageData?.items?.[0]?.fields || {};
+const h = {
+  aboutHeadline: hRaw.aboutHeadline || "We commit ourselves entirely to our partners and the solutions we deliver, bringing unmatched expertise.",
+  aboutDescription: hRaw.aboutDescription || "We are a comprehensive property consultancy specializing in residential and commercial assets.",
+  aboutStat: hRaw.aboutStat || "750+",
+  portalTitle: hRaw.portalTitle || "A PORTAL TO PROFOUND ARCHITECTURAL ENVIRONMENTS",
+  portalSubtitle: hRaw.portalSubtitle || "Transforming visionary designs into tangible forms with flawless execution.",
+  contactTitle: hRaw.contactTitle || "LET'S BUILD THE FUTURE TOGETHER.",
+  contactDescription: hRaw.contactDescription || "Connect with our principal architects and regional directors.",
+  contactEmail: hRaw.contactEmail || "hello@nexus.com",
+  contactPhone: hRaw.contactPhone || "+1 (555) 123-4567",
+  footerTagline: hRaw.footerTagline || "EXCELLENCE // INTEGRATION // LONGEVITY",
+  footerAddress: hRaw.footerAddress || "880 INNOVATION WAY, SUITE 400\nAUSTIN, TEXAS 78701",
 };
-const heroImage = h.heroImages?.[0]?.url || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80';
-const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('/api', '')}${heroImage}`;
+
+const heroImageId = hRaw.heroImages?.[0]?.sys?.id;
+const heroImageUrl = getAssetUrl(assets, heroImageId) || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80';
+
+const regions = regionsData?.items || [];
+const stats = statsData?.items || [];
+const properties = propertiesData?.items || [];
+const testimonials = testimonialsData?.items || [];
 ---
 
 <!DOCTYPE html>
@@ -126,7 +146,7 @@ const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('
                 <input type="text" placeholder="Search region...">
             </div>
             <div class="region-tags">
-                {regions.data?.map(r => <span>{r.name.toUpperCase()}</span>)}
+                {regions.map(r => <span>{r.fields.name.toUpperCase()}</span>)}
             </div>
             <div class="portal-bottom">
                 <div class="partner-card">
@@ -152,11 +172,11 @@ const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('
 
     <!-- STATS -->
     <section class="stats fade-up">
-        {stats.data?.map(s => (
+        {stats.map(s => (
             <div class="stat-card">
                 <div class="stat-arrow">↗</div>
-                <div class="stat-number">{s.number}<span class="stat-unit">{s.unit || ''}</span></div>
-                <p>{s.description}</p>
+                <div class="stat-number">{s.fields.number}<span class="stat-unit">{s.fields.unit || ''}</span></div>
+                <p>{s.fields.description}</p>
             </div>
         ))}
     </section>
@@ -172,20 +192,19 @@ const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('
 
     <!-- PROPERTIES -->
     <section class="properties">
-        {properties.data?.slice(0, 2).map(p => {
-            const imgUrl = p.image?.url 
-                ? (p.image.url.startsWith('http') ? p.image.url : `${API.replace('/api', '')}${p.image.url}`)
-                : 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
+        {properties.slice(0, 2).map(p => {
+            const imgId = p.fields.image?.sys?.id;
+            const imgUrl = getAssetUrl(assets, imgId) || 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
             return (
                 <div class="property-card">
                     <div class="property-img-wrap">
-                        <img src={imgUrl} alt={p.name}>
+                        <img src={imgUrl} alt={p.fields.name}>
                     </div>
                     <div class="property-meta">
-                        <span>{p.category}</span>
-                        <span>{p.size || ''}</span>
+                        <span>{p.fields.category}</span>
+                        <span>{p.fields.size || ''}</span>
                     </div>
-                    <div class="property-name">{p.name}</div>
+                    <div class="property-name">{p.fields.name}</div>
                 </div>
             );
         })}
@@ -201,21 +220,20 @@ const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('
             <h3>EMBODIES THE<br>RAW ESSENCE</h3>
             <a href="#" class="underline-link light">BROWSE PORTFOLIO ↗</a>
         </div>
-        {properties.data?.[2] && (() => {
-            const p = properties.data[2];
-            const imgUrl = p.image?.url 
-                ? (p.image.url.startsWith('http') ? p.image.url : `${API.replace('/api', '')}${p.image.url}`)
-                : 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
+        {properties[2] && (() => {
+            const p = properties[2];
+            const imgId = p.fields.image?.sys?.id;
+            const imgUrl = getAssetUrl(assets, imgId) || 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
             return (
                 <div class="property-third">
                     <div class="property-img-wrap">
-                        <img src={imgUrl} alt={p.name}>
+                        <img src={imgUrl} alt={p.fields.name}>
                     </div>
                     <div class="property-meta">
-                        <span>{p.category}</span>
-                        <span>{p.size || ''}</span>
+                        <span>{p.fields.category}</span>
+                        <span>{p.fields.size || ''}</span>
                     </div>
-                    <div class="property-name">{p.name}</div>
+                    <div class="property-name">{p.fields.name}</div>
                 </div>
             );
         })()}
@@ -229,18 +247,17 @@ const heroImageUrl = heroImage.startsWith('http') ? heroImage : `${API.replace('
             <span class="bracket-tag">[ CLIENT PERSPECTIVES ]</span>
         </div>
         <div class="testimonials-grid">
-            {testimonials.data?.map(t => {
-                const avatarUrl = t.avatar?.url
-                    ? (t.avatar.url.startsWith('http') ? t.avatar.url : `${API.replace('/api', '')}${t.avatar.url}`)
-                    : `https://i.pravatar.cc/40?u=${t.authorName}`;
+            {testimonials.map(t => {
+                const avatarId = t.fields.avatar?.sys?.id;
+                const avatarUrl = getAssetUrl(assets, avatarId) || `https://i.pravatar.cc/40?u=${t.fields.authorName}`;
                 return (
                     <div class="testimonial-card">
-                        <p>"{t.quote}"</p>
+                        <p>"{t.fields.quote}"</p>
                         <div class="testimonial-author">
-                            <img src={avatarUrl} alt={t.authorName}>
+                            <img src={avatarUrl} alt={t.fields.authorName}>
                             <div>
-                                <div class="author-name">{t.authorName}</div>
-                                <div class="author-title">{t.authorTitle || ''}{t.authorCompany ? ', ' + t.authorCompany.toUpperCase() : ''}</div>
+                                <div class="author-name">{t.fields.authorName}</div>
+                                <div class="author-title">{t.fields.authorTitle || ''}{t.fields.authorCompany ? ', ' + t.fields.authorCompany.toUpperCase() : ''}</div>
                             </div>
                         </div>
                     </div>
