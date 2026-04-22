@@ -134,7 +134,7 @@ body {
 }
 
 .hero-image {
-    margin: -30px 48px 0;
+    margin: 0 48px 0;
     border-radius: 8px;
     overflow: hidden;
     height: 480px;
@@ -976,7 +976,7 @@ body {
         padding-top: 80px;
     }
 
-    .hero-image { margin: -30px 24px 0; height: 300px; }
+    .hero-image { margin: 0 24px 0; height: 300px; }
 
     .about, .portal, .stats, .crafted, .properties, .testimonials, .contact, .footer {
         padding-left: 24px;
