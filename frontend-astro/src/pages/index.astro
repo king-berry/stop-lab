@@ -116,21 +116,19 @@ const testimonials = testimonialsData?.items || [];
             <span></span>
         </button>
         <div class="nav-links">
-            <a href="#">Offices</a>
-            <a href="#">Offerings</a>
-            <a href="#">Developments</a>
-            <a href="#">Vision</a>
-            <a href="#">Our Story</a>
+            <a href="#">Dự Án</a>
+            <a href="#">Về Chúng Tôi</a>
+            <a href="#">Giải Pháp</a>
+            <a href="#contact">Liên Hệ</a>
         </div>
-        <a href="#contact" class="nav-cta">GET IN TOUCH ↗</a>
+        <a href="#contact" class="nav-cta">LIÊN HỆ NGAY ↗</a>
     </nav>
     
     <div class="mobile-menu">
-        <a href="#">Offices</a>
-        <a href="#">Offerings</a>
-        <a href="#">Developments</a>
-        <a href="#">Vision</a>
-        <a href="#">Our Story</a>
+        <a href="#">Dự Án</a>
+        <a href="#">Về Chúng Tôi</a>
+        <a href="#">Giải Pháp</a>
+        <a href="#contact">Liên Hệ</a>
     </div>
 
     <!-- HERO -->
@@ -147,22 +145,22 @@ const testimonials = testimonialsData?.items || [];
             {h.aboutHeadline}
         </div>
         <div class="about-body">
-            <div class="about-tag"><span class="dot">●</span> OUR IDENTITY</div>
+            <div class="about-tag"><span class="dot">●</span> BẢN SẮC CỦA CHÚNG TÔI</div>
             <div class="about-desc">
                 <p>{h.aboutDescription}</p>
-                <a href="#contact" class="underline-link">CONNECT WITH US ↗</a>
+                <a href="#contact" class="underline-link">KẾT NỐI VỚI CHÚNG TÔI ↗</a>
             </div>
             <div class="about-stat">{h.aboutStat}</div>
         </div>
         <div class="about-footer">
-            <span>BEYOND CONVENTIONAL REAL ESTATE.</span>
+            <span>VƯỢT TRÊN BẤT ĐỘNG SẢN THÔNG THƯỜNG.</span>
             <div class="about-images">
                 {(hRaw.aboutImages || []).map((img: any) => {
                     const url = getAssetUrl(assets, img?.sys?.id);
                     return url ? <img src={url} alt=""> : null;
                 })}
             </div>
-            <span>WE FORGE TRUST.</span>
+            <span>CHÚNG TÔI XÂY DỰNG NIỀM TIN.</span>
         </div>
     </section>
 
@@ -181,12 +179,12 @@ const testimonials = testimonialsData?.items || [];
             </div>
             <div class="portal-bottom">
                 <div class="partner-card">
-                    <div class="partner-label">Certified Partner</div>
+                    <div class="partner-label">Đối Tác Chứng Nhận</div>
                     <div class="partner-name">VANGUARD</div>
                 </div>
                 <div class="partner-info">
-                    <p class="partner-desc">Leveraging extensive regional intelligence and a partner-centric strategy, we navigate investors seamlessly.</p>
-                    <a href="#" class="underline-link light">EXPLORE DETAILS ↗</a>
+                    <p class="partner-desc">Tận dụng thông tin khu vực sâu rộng và chiến lược lấy đối tác làm trung tâm, chúng tôi dẫn dắt nhà đầu tư một cách liền mạch.</p>
+                    <a href="#" class="underline-link light">KHÁM PHÁ CHI TIẾT ↗</a>
                 </div>
             </div>
         </div>
@@ -214,10 +212,10 @@ const testimonials = testimonialsData?.items || [];
 
     <!-- CRAFTED -->
     <section class="crafted fade-up">
-        <div class="crafted-label">[ HEADQUARTERED IN ]</div>
+        <div class="crafted-label">[ TRỤ SỞ TẠI ]</div>
         <div class="crafted-right">
-            <h2 class="crafted-title">CRAFTED WITH INTENT</h2>
-            <p class="crafted-desc">Explore exclusive assets in the most coveted districts. From contemporary urban lofts to secluded retreats, we curate spaces that align with your aspirations.</p>
+            <h2 class="crafted-title">KIẾN TẠO VỚI TÂM HUYẾT</h2>
+            <p class="crafted-desc">Khám phá các tài sản độc quyền tại những khu vực được săn đón nhất. Từ căn hộ đô thị hiện đại đến khu nghỉ dưỡng ẩn mình, chúng tôi tuyển chọn những không gian phù hợp với khát vọng của bạn.</p>
         </div>
     </section>
 
@@ -245,11 +243,11 @@ const testimonials = testimonialsData?.items || [];
     <section class="embodies-section">
         <div class="embodies-stat">
             <div class="embodies-number">8</div>
-            <div class="embodies-stat-label">VISIONARIES FROM THE<br>STUDIO</div>
+            <div class="embodies-stat-label">NHỮNG NHÀ TIÊN PHONG TỪ<br>XƯỞNG SÁNG TẠO</div>
         </div>
         <div class="embodies-center">
-            <h3>EMBODIES THE<br>RAW ESSENCE</h3>
-            <a href="#" class="underline-link light">BROWSE PORTFOLIO ↗</a>
+            <h3>HIỆN THÂN<br>BẢN CHẤT THUẦN KHIẾT</h3>
+            <a href="#" class="underline-link light">XEM DANH MỤC ↗</a>
         </div>
         {properties[2] && (() => {
             const p = properties[2];
@@ -274,8 +272,8 @@ const testimonials = testimonialsData?.items || [];
     <!-- TESTIMONIALS -->
     <section class="testimonials fade-up">
         <div class="testimonials-header">
-            <h2>ENDORSEMENTS FROM<br>OUR PARTNERS</h2>
-            <span class="bracket-tag">[ CLIENT PERSPECTIVES ]</span>
+            <h2>ĐÁNH GIÁ TỪ<br>CÁC ĐỐI TÁC</h2>
+            <span class="bracket-tag">[ GÓC NHÌN KHÁCH HÀNG ]</span>
         </div>
         <div class="testimonials-grid">
             {testimonials.map(t => {
@@ -300,41 +298,41 @@ const testimonials = testimonialsData?.items || [];
     <!-- CONTACT -->
     <section class="contact fade-up" id="contact">
         <div class="contact-left">
-            <div class="bracket-tag light">[ INITIATE DIALOGUE ]</div>
+            <div class="bracket-tag light">[ BẮT ĐẦU ĐỐI THOẠI ]</div>
             <h2>{h.contactTitle}</h2>
             <p>{h.contactDescription}</p>
             <div class="contact-info">
                 <div>
-                    <div class="info-label">GENERAL INQUIRIES</div>
+                    <div class="info-label">LIÊN HỆ CHUNG</div>
                     <div class="info-value">{h.contactEmail}</div>
                 </div>
                 <div>
-                    <div class="info-label">DIRECT LINE</div>
+                    <div class="info-label">ĐƯỜNG DÂY TRỰC TIẾP</div>
                     <div class="info-value">{h.contactPhone}</div>
                 </div>
             </div>
         </div>
         <div class="contact-form">
             <div class="form-row">
-                <div class="form-group"><label>FIRST NAME</label><input type="text"></div>
-                <div class="form-group"><label>LAST NAME</label><input type="text"></div>
+                <div class="form-group"><label>HỌ</label><input type="text"></div>
+                <div class="form-group"><label>TÊN</label><input type="text"></div>
             </div>
-            <div class="form-group"><label>EMAIL ADDRESS</label><input type="email"></div>
+            <div class="form-group"><label>ĐỊA CHỈ EMAIL</label><input type="email"></div>
             <div class="form-group">
-                <label>AREA OF INTEREST</label>
+                <label>LĨNH VỰC QUAN TÂM</label>
                 <select>
-                    <option>Select an option...</option>
-                    <option>Residential</option>
-                    <option>Commercial</option>
-                    <option>Development</option>
+                    <option>Chọn một tùy chọn...</option>
+                    <option>Nhà ở</option>
+                    <option>Thương mại</option>
+                    <option>Phát triển dự án</option>
                 </select>
             </div>
-            <div class="form-group"><label>MESSAGE</label><textarea rows="4"></textarea></div>
+            <div class="form-group"><label>TIN NHẮN</label><textarea rows="4"></textarea></div>
             <div class="form-check">
                 <input type="checkbox" id="terms">
-                <label for="terms">I agree to the Terms &amp; Privacy Policy</label>
+                <label for="terms">Tôi đồng ý với Điều khoản &amp; Chính sách Bảo mật</label>
             </div>
-            <button class="submit-btn">SUBMIT INQUIRY ↗</button>
+            <button class="submit-btn">GỬI YÊU CẦU ↗</button>
         </div>
     </section>
 
@@ -342,20 +340,20 @@ const testimonials = testimonialsData?.items || [];
     <footer class="footer">
         <div class="footer-bg-text">{h.siteName}</div>
         <div class="footer-left">
-            <div>FOUNDED '18</div>
-            <div class="footer-copy">ALL RIGHTS RETAINED.<br>©2024 {h.siteName} GROUP</div>
+            <div>THÀNH LẬP '18</div>
+            <div class="footer-copy">BẢO LƯU MỌI QUYỀN.<br>©2024 {h.siteName} GROUP</div>
         </div>
         <div class="footer-center">
             <div>{h.footerTagline}</div>
             <div set:html={h.footerAddress?.replace(/\n/g, '<br>')}></div>
         </div>
         <div class="footer-right">
-            <div>DIRECTORY</div>
+            <div>DANH MỤC</div>
             <div class="footer-links">
                 <a href="#">INSTAGRAM</a>
                 <a href="#">LINKEDIN</a>
             </div>
-            <a href="#">TERMS &amp; PRIVACY</a>
+            <a href="#">ĐIỀU KHOẢN &amp; BẢO MẬT</a>
         </div>
     </footer>
 
@@ -414,16 +412,16 @@ const testimonials = testimonialsData?.items || [];
             const agreed    = document.getElementById('terms').checked;
             
             if (!firstName || !email) {
-                alert('Please fill in First Name and Email.');
+                alert('Vui lòng điền Họ và Email.');
                 return;
             }
             if (!agreed) {
-                alert('Please agree to the Terms & Privacy Policy.');
+                alert('Vui lòng đồng ý với Điều khoản & Chính sách Bảo mật.');
                 return;
             }
             
             const btn = document.querySelector('.submit-btn');
-            btn.textContent = 'SENDING...';
+            btn.textContent = 'ĐANG GỬI...';
             btn.disabled = true;
             
             fetch(SHEET_URL, {
@@ -433,7 +431,7 @@ const testimonials = testimonialsData?.items || [];
                 body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
             });
             
-            btn.textContent = 'SENT ✓';
+            btn.textContent = 'ĐÃ GỬI ✓';
             document.querySelectorAll('.contact-form input, .contact-form select, .contact-form textarea').forEach(el => el.value = '');
             document.getElementById('terms').checked = false;
         });
