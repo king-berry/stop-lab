@@ -15,11 +15,47 @@ async function fetchContentful(contentType, params = '') {
   }
 }
 
-const homepageData = await fetchContentful('homepage');
-const statsData = await fetchContentful('statistic', '&order=fields.order');
+async function fetchAllAssets() {
+  try {
+    const res = await fetch(`${CDA}/assets?limit=200`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return [];
+    return (await res.json()).items || [];
+  } catch { return []; }
+}
+
+function getAssetUrl(assets, assetId) {
+  if (!assets || !assetId) return null;
+  const asset = assets.find(a => a.sys.id === assetId);
+  return asset ? `https:${asset.fields.file.url}` : null;
+}
+
+const [homepageData, statsData, aboutData, allAssets] = await Promise.all([
+  fetchContentful('homepage'),
+  fetchContentful('statistic', '&order=fields.order'),
+  fetchContentful('aboutPage'),
+  fetchAllAssets(),
+]);
+
 const hRaw = homepageData?.items?.[0]?.fields || {};
 const siteName = hRaw.siteName || 'StopLab';
 const stats = statsData?.items || [];
+
+const aRaw = aboutData?.items?.[0]?.fields || {};
+const heroImageUrl = getAssetUrl(allAssets, aRaw.heroImage?.sys?.id);
+
+const a = {
+  heroTitle: aRaw.heroTitle || 'KIẾN TẠO BẰNG TÂM HUYẾT VÀ SỰ CHUYÊN NGHIỆP',
+  heroDescription: aRaw.heroDescription || 'StopLab không chỉ xây dựng công trình, mà còn xây dựng trải nghiệm sống.',
+  storyTitle: aRaw.storyTitle || 'Nơi mọi ánh nhìn dừng lại',
+  storyContent: aRaw.storyContent || '"Stop" trong StopLab không phải là dừng lại mãi mãi...',
+  visionTitle: aRaw.visionTitle || 'Định hướng phát triển',
+  visionItems: aRaw.visionItems || [],
+  missionTitle: aRaw.missionTitle || 'Cam kết của chúng tôi',
+  missionItems: aRaw.missionItems || [],
+  valuesTitle: aRaw.valuesTitle || 'Những gì chúng tôi tin tưởng',
+};
 ---
 
 <!DOCTYPE html>
@@ -63,6 +99,28 @@ const stats = statsData?.items || [];
             color: rgba(255,255,255,0.6);
             max-width: 600px;
             line-height: 1.8;
+        }
+
+        .about-hero-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 48px;
+            opacity: 0.8;
+        }
+
+        .about-hero-img-wrap {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .about-hero-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .about-stats-bar {
@@ -260,6 +318,7 @@ const stats = statsData?.items || [];
             <a href="#">Dự Án</a>
             <a href="/ve-chung-toi" style="border-bottom: 1px solid #1a1a1a;">Về Chúng Tôi</a>
             <a href="#">Giải Pháp</a>
+            <a href="/#contact">Liên Hệ</a>
         </div>
         <a href="/#contact" class="nav-cta">LIÊN HỆ NGAY ↗</a>
     </nav>
@@ -269,14 +328,20 @@ const stats = statsData?.items || [];
         <a href="#">Dự Án</a>
         <a href="/ve-chung-toi">Về Chúng Tôi</a>
         <a href="#">Giải Pháp</a>
+        <a href="/#contact">Liên Hệ</a>
     </div>
 
     <!-- HERO -->
     <div class="about-hero">
         <div class="about-hero-tag">[ VỀ CHÚNG TÔI ]</div>
-        <h1>KIẾN TẠO BẰNG TÂM HUYẾT VÀ SỰ CHUYÊN NGHIỆP</h1>
-        <p>StopLab không chỉ xây dựng công trình, mà còn xây dựng trải nghiệm sống. Chúng tôi tin rằng mỗi không gian đẹp không chỉ để ở mà còn là nơi khiến con người thật sự muốn "dừng lại".</p>
+        <h1>{a.heroTitle}</h1>
+        <p>{a.heroDescription}</p>
     </div>
+    {heroImageUrl && (
+        <div class="about-hero-img-wrap">
+            <img src={heroImageUrl} alt="About Hero">
+        </div>
+    )}
 
     <!-- STATS -->
     <div class="about-stats-bar">
@@ -292,11 +357,10 @@ const stats = statsData?.items || [];
     <div class="about-section">
         <div class="about-section-left">
             <div class="about-section-label">[ CÂU CHUYỆN ]</div>
-            <h2>Nơi mọi ánh nhìn dừng lại</h2>
+            <h2>{a.storyTitle}</h2>
         </div>
         <div class="about-section-inner">
-            <p>"Stop" trong StopLab không phải là dừng lại mãi mãi. Nó là khoảnh khắc bạn buộc phải dừng bước, ngoái nhìn, và bị cuốn hút. Dừng lại để chiêm ngưỡng một không gian được kiến tạo tinh tế. Dừng lại để lựa chọn một đối tác tin cậy. Dừng lại để trao niềm tin cho những người làm nghề bằng cả trái tim và sự chuyên nghiệp.</p>
-            <p>Chúng tôi là StopLab – đơn vị thiết kế và thi công kiến trúc, nội thất với tinh thần làm việc như trong một phòng nghiên cứu sáng tạo. Ở đây, từng chi tiết, từng chất liệu, từng ánh sáng đều được nghiên cứu, thử nghiệm và hoàn thiện.</p>
+            <p set:html={a.storyContent?.replace(/\n/g, '<br>')}></p>
         </div>
     </div>
 
@@ -304,13 +368,11 @@ const stats = statsData?.items || [];
     <div class="about-section" style="background: white;">
         <div class="about-section-left">
             <div class="about-section-label">[ TẦM NHÌN ]</div>
-            <h2>Định hướng phát triển</h2>
+            <h2>{a.visionTitle}</h2>
         </div>
         <div class="about-section-inner">
             <ul>
-                <li>Trở thành đơn vị thiết kế kiến trúc, nội thất chuyên sâu, tiên phong tại Việt Nam, cung cấp giải pháp thiết kế sáng tạo tìm đến giá trị riêng của mỗi khách hàng.</li>
-                <li>Được khách hàng lựa chọn vì phong cách tối giản – tinh tế – bền vững, đồng thời tạo ra giá trị sống lâu dài cho cộng đồng và môi trường.</li>
-                <li>Bằng tinh thần sáng tạo, nhiệt huyết và đột phá, StopLab kiến thiết định hình môi trường sống chất lượng cho người Việt.</li>
+                {a.visionItems.map((item: string) => <li>{item}</li>)}
             </ul>
         </div>
     </div>
@@ -319,13 +381,11 @@ const stats = statsData?.items || [];
     <div class="about-section">
         <div class="about-section-left">
             <div class="about-section-label">[ SỨ MỆNH ]</div>
-            <h2>Cam kết của chúng tôi</h2>
+            <h2>{a.missionTitle}</h2>
         </div>
         <div class="about-section-inner">
             <ul>
-                <li>Đồng hành cùng khách hàng, đối tác, tạo ra công trình không chỉ có giá trị về công năng sử dụng mà còn mang ý nghĩa câu chuyện cảm xúc, đồng bộ concept từ tổng thể tới chi tiết.</li>
-                <li>Đưa ra giải pháp, mô hình độc đáo tối ưu chi phí và tối đa hóa lợi nhuận cho khách hàng, đối tác. Đón đầu những xu thế phát triển của thời đại.</li>
-                <li>Thể hiện tiếng nói của kiến trúc Việt Nam ra thế giới, với thông điệp về bản sắc dân tộc và tầm nhìn Châu Á tương lai.</li>
+                {a.missionItems.map((item: string) => <li>{item}</li>)}
             </ul>
         </div>
     </div>
@@ -334,7 +394,7 @@ const stats = statsData?.items || [];
     <div class="about-section" style="background: white;">
         <div class="about-section-left">
             <div class="about-section-label">[ GIÁ TRỊ ]</div>
-            <h2>Những gì chúng tôi tin tưởng</h2>
+            <h2>{a.valuesTitle}</h2>
         </div>
         <div class="about-section-inner">
             <div class="values-grid">
