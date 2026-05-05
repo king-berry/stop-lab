@@ -1,0 +1,392 @@
+---
+const SPACE_ID = 'yo5cnbbvoxyx';
+const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
+
+async function fetchContentful(contentType, params = '') {
+  try {
+    const res = await fetch(`${CDA}/entries?content_type=${contentType}&include=2${params}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+const homepageData = await fetchContentful('homepage');
+const statsData = await fetchContentful('statistic', '&order=fields.order');
+const hRaw = homepageData?.items?.[0]?.fields || {};
+const siteName = hRaw.siteName || 'StopLab';
+const stats = statsData?.items || [];
+---
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Về Chúng Tôi — {siteName}</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style is:global>
+        @import '../styles.css';
+    </style>
+    <style>
+        .about-page { background: var(--lighter); min-height: 100vh; }
+
+        .about-hero {
+            padding: 140px 48px 80px;
+            background: var(--dark);
+            color: var(--white);
+        }
+
+        .about-hero-tag {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 24px;
+        }
+
+        .about-hero h1 {
+            font-size: clamp(36px, 6vw, 80px);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            max-width: 800px;
+            margin-bottom: 40px;
+        }
+
+        .about-hero p {
+            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+            max-width: 600px;
+            line-height: 1.8;
+        }
+
+        .about-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: var(--darker);
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .about-stat-item {
+            padding: 40px 48px;
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .about-stat-item:last-child { border-right: none; }
+
+        .about-stat-num {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--white);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .about-stat-label {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        .about-section {
+            padding: 0 48px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: start;
+        }
+
+        .about-section-inner {
+            padding: 60px 0 60px 60px;
+            min-width: 0;
+            border-left: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .about-section-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .about-section-left {
+            padding: 60px 60px 60px 0;
+        }
+
+        .about-section h2 {
+            font-size: clamp(28px, 3vw, 42px);
+            font-weight: 400;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            color: #1a1a1a;
+        }
+
+        .about-section p {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #555;
+            max-width: 600px;
+            margin-bottom: 16px;
+        }
+
+        .about-section ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+        }
+
+        .about-section ul li {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #555;
+            padding: 12px 0 12px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            position: relative;
+        }
+
+        .about-section ul li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #888;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .value-card {
+            padding: 32px;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .value-card:hover { border-color: rgba(0,0,0,0.2); }
+
+        .value-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .value-card p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.7;
+        }
+
+        .about-contact {
+            padding: 80px 48px;
+            background: var(--dark);
+            color: var(--white);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .about-contact h2 {
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 400;
+            letter-spacing: -1px;
+            margin-bottom: 24px;
+        }
+
+        .about-contact p {
+            color: rgba(255,255,255,0.6);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .contact-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .contact-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .contact-detail-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .contact-detail-value {
+            font-size: 15px;
+            color: var(--white);
+        }
+
+        @media (max-width: 900px) {
+            .about-hero { padding: 120px 24px 60px; }
+            .about-stats-bar { grid-template-columns: 1fr; }
+            .about-stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 32px 24px; }
+            .about-section { grid-template-columns: 1fr; padding: 0 24px; }
+            .about-section-left { padding: 40px 0 0; }
+            .about-section-inner { border-left: none; border-top: 1px solid rgba(0,0,0,0.1); padding: 24px 0 40px; }
+            .values-grid { grid-template-columns: 1fr; }
+            .about-contact { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+        }
+    </style>
+</head>
+<body class="about-page">
+
+    <!-- NAV -->
+    <nav class="navbar">
+        <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links">
+            <a href="/">Trang Chủ</a>
+            <a href="#">Dự Án</a>
+            <a href="/ve-chung-toi" style="border-bottom: 1px solid #1a1a1a;">Về Chúng Tôi</a>
+            <a href="#">Giải Pháp</a>
+        </div>
+        <a href="/#contact" class="nav-cta">LIÊN HỆ NGAY ↗</a>
+    </nav>
+
+    <div class="mobile-menu">
+        <a href="/">Trang Chủ</a>
+        <a href="#">Dự Án</a>
+        <a href="/ve-chung-toi">Về Chúng Tôi</a>
+        <a href="#">Giải Pháp</a>
+    </div>
+
+    <!-- HERO -->
+    <div class="about-hero">
+        <div class="about-hero-tag">[ VỀ CHÚNG TÔI ]</div>
+        <h1>KIẾN TẠO BẰNG TÂM HUYẾT VÀ SỰ CHUYÊN NGHIỆP</h1>
+        <p>StopLab không chỉ xây dựng công trình, mà còn xây dựng trải nghiệm sống. Chúng tôi tin rằng mỗi không gian đẹp không chỉ để ở mà còn là nơi khiến con người thật sự muốn "dừng lại".</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="about-stats-bar">
+        {stats.map(s => (
+            <div class="about-stat-item">
+                <div class="about-stat-num">{s.fields.number}{s.fields.unit}</div>
+                <div class="about-stat-label">{s.fields.description}</div>
+            </div>
+        ))}
+    </div>
+
+    <!-- STORY -->
+    <div class="about-section">
+        <div class="about-section-left">
+            <div class="about-section-label">[ CÂU CHUYỆN ]</div>
+            <h2>Nơi mọi ánh nhìn dừng lại</h2>
+        </div>
+        <div class="about-section-inner">
+            <p>"Stop" trong StopLab không phải là dừng lại mãi mãi. Nó là khoảnh khắc bạn buộc phải dừng bước, ngoái nhìn, và bị cuốn hút. Dừng lại để chiêm ngưỡng một không gian được kiến tạo tinh tế. Dừng lại để lựa chọn một đối tác tin cậy. Dừng lại để trao niềm tin cho những người làm nghề bằng cả trái tim và sự chuyên nghiệp.</p>
+            <p>Chúng tôi là StopLab – đơn vị thiết kế và thi công kiến trúc, nội thất với tinh thần làm việc như trong một phòng nghiên cứu sáng tạo. Ở đây, từng chi tiết, từng chất liệu, từng ánh sáng đều được nghiên cứu, thử nghiệm và hoàn thiện.</p>
+        </div>
+    </div>
+
+    <!-- VISION -->
+    <div class="about-section" style="background: white;">
+        <div class="about-section-left">
+            <div class="about-section-label">[ TẦM NHÌN ]</div>
+            <h2>Định hướng phát triển</h2>
+        </div>
+        <div class="about-section-inner">
+            <ul>
+                <li>Trở thành đơn vị thiết kế kiến trúc, nội thất chuyên sâu, tiên phong tại Việt Nam, cung cấp giải pháp thiết kế sáng tạo tìm đến giá trị riêng của mỗi khách hàng.</li>
+                <li>Được khách hàng lựa chọn vì phong cách tối giản – tinh tế – bền vững, đồng thời tạo ra giá trị sống lâu dài cho cộng đồng và môi trường.</li>
+                <li>Bằng tinh thần sáng tạo, nhiệt huyết và đột phá, StopLab kiến thiết định hình môi trường sống chất lượng cho người Việt.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MISSION -->
+    <div class="about-section">
+        <div class="about-section-left">
+            <div class="about-section-label">[ SỨ MỆNH ]</div>
+            <h2>Cam kết của chúng tôi</h2>
+        </div>
+        <div class="about-section-inner">
+            <ul>
+                <li>Đồng hành cùng khách hàng, đối tác, tạo ra công trình không chỉ có giá trị về công năng sử dụng mà còn mang ý nghĩa câu chuyện cảm xúc, đồng bộ concept từ tổng thể tới chi tiết.</li>
+                <li>Đưa ra giải pháp, mô hình độc đáo tối ưu chi phí và tối đa hóa lợi nhuận cho khách hàng, đối tác. Đón đầu những xu thế phát triển của thời đại.</li>
+                <li>Thể hiện tiếng nói của kiến trúc Việt Nam ra thế giới, với thông điệp về bản sắc dân tộc và tầm nhìn Châu Á tương lai.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- VALUES -->
+    <div class="about-section" style="background: white;">
+        <div class="about-section-left">
+            <div class="about-section-label">[ GIÁ TRỊ ]</div>
+            <h2>Những gì chúng tôi tin tưởng</h2>
+        </div>
+        <div class="about-section-inner">
+            <div class="values-grid">
+                <div class="value-card">
+                    <h3>Chuyên Tâm</h3>
+                    <p>Luôn đặt sự tận tâm và trách nhiệm lên hàng đầu trong từng dự án.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Đồng Hành</h3>
+                    <p>Luôn sát cánh cùng khách hàng trong suốt hành trình từ ý tưởng đến hoàn thiện.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Tử Tế</h3>
+                    <p>Làm việc bằng sự chân thành, minh bạch, trách nhiệm và tôn trọng lẫn nhau.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="about-contact">
+        <div>
+            <h2>CÙNG NHAU TẠO NÊN ĐIỀU KỲ DIỆU</h2>
+            <p>Chúng tôi luôn sẵn sàng lắng nghe và đồng hành cùng bạn trong hành trình kiến tạo không gian sống hoàn hảo.</p>
+            <a href="/#contact" class="submit-btn" style="display:inline-block; text-decoration:none;">LIÊN HỆ NGAY ↗</a>
+        </div>
+        <div class="contact-detail">
+            <div class="contact-detail-item">
+                <span class="contact-detail-label">EMAIL</span>
+                <span class="contact-detail-value">{hRaw.contactEmail || 'hello@stoplab.vn'}</span>
+            </div>
+            <div class="contact-detail-item">
+                <span class="contact-detail-label">ĐIỆN THOẠI</span>
+                <span class="contact-detail-value">{hRaw.contactPhone || '+84 (0) 123 456 789'}</span>
+            </div>
+            <div class="contact-detail-item">
+                <span class="contact-detail-label">ĐỊA CHỈ</span>
+                <span class="contact-detail-value" set:html={hRaw.footerAddress?.replace(/\n/g, '<br>') || '123 Đường Sáng Tạo, Quận 1<br>Hồ Chí Minh, Việt Nam'}></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        const menu = document.querySelector('.mobile-menu');
+        toggle?.addEventListener('click', () => menu?.classList.toggle('active'));
+        document.addEventListener('click', (e) => {
+            if (!toggle?.contains(e.target) && !menu?.contains(e.target)) {
+                menu?.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>
