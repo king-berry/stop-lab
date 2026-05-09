@@ -1,0 +1,424 @@
+---
+const SPACE_ID = 'yo5cnbbvoxyx';
+const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
+
+async function fetchAllAssets() {
+  try {
+    const res = await fetch(`${CDA}/assets?limit=200`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return [];
+    return (await res.json()).items || [];
+  } catch { return []; }
+}
+
+function getAssetUrl(assets, assetId) {
+  if (!assets || !assetId) return null;
+  const asset = assets.find(a => a.sys.id === assetId);
+  return asset ? `https:${asset.fields.file.url}` : null;
+}
+
+export async function getStaticPaths() {
+  const SPACE_ID = 'yo5cnbbvoxyx';
+  const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+  const res = await fetch(
+    `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master/entries?content_type=project&include=2`,
+    { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
+  );
+  const data = await res.json();
+  return (data.items || []).map(p => ({
+    params: { slug: p.fields.slug || p.sys.id },
+    props: { project: p }
+  }));
+}
+
+const { project } = Astro.props;
+const allAssets = await fetchAllAssets();
+
+// Fetch siteName
+const homepageRes = await fetch(
+  `${CDA}/entries?content_type=homepage&limit=1`,
+  { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
+);
+const homepageData = await homepageRes.json();
+const siteName = homepageData?.items?.[0]?.fields?.siteName || 'StopLab';
+
+const p = project.fields;
+const coverUrl = getAssetUrl(allAssets, p.coverImage?.sys?.id)
+  || 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1600&q=80';
+
+const galleryImages = [
+  coverUrl,
+  ...(p.images || []).map(img => getAssetUrl(allAssets, img?.sys?.id)).filter(Boolean)
+];
+---
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{p.name} — {siteName}</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta property="og:image" content={coverUrl}>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --dark: #3a3530;
+      --darker: #2e2a26;
+      --light: #f0ece4;
+      --lighter: #f5f2ec;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #888;
+      --border: rgba(0,0,0,0.08);
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: var(--white);
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-logo sup { font-size: 0.5em; vertical-align: super; }
+
+    .nav-links { display: flex; gap: 32px; }
+
+    .nav-links a {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+    .nav-cta {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+      padding-bottom: 2px;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-toggle span {
+      width: 24px; height: 2px;
+      background: var(--white);
+      display: block;
+    }
+
+    .nav-mobile {
+      position: fixed;
+      top: 65px; left: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.95);
+      padding: 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transform: translateY(-110%);
+      transition: transform 0.3s ease;
+      z-index: 99;
+    }
+
+    .nav-mobile.active { transform: translateY(0); }
+
+    .nav-mobile a {
+      font-size: 16px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    /* SLIDER */
+    .slider {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .slide.active { opacity: 1; }
+
+    /* INFO BAR */
+    .info-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 50;
+      background: rgba(58, 53, 48, 0.92);
+      backdrop-filter: blur(8px);
+      transition: transform 0.4s ease;
+    }
+
+    .info-bar.collapsed .info-bar-header {
+      padding: 10px 24px;
+    }
+
+    .info-bar.collapsed .info-bar-title {
+      font-size: 14px;
+    }
+
+    .info-bar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      cursor: pointer;
+    }
+
+    .info-bar-title {
+      font-size: 18px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+    }
+
+    .info-bar-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ctrl-btn {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: none;
+      color: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.2s;
+      border-radius: 2px;
+    }
+
+    .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
+
+    .ctrl-btn.grid-btn {
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .info-bar-body {
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s ease, padding 0.4s ease;
+    }
+
+    .info-bar-body.open {
+      max-height: 300px;
+      padding: 0 24px 20px;
+    }
+      padding: 0 24px 20px;
+    }
+
+    .info-item {}
+
+    .info-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .info-val {
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* SLIDE COUNTER */
+    .slide-counter {
+      position: fixed;
+      top: 50%;
+      right: 24px;
+      transform: translateY(-50%);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dot.active { background: var(--white); }
+
+    @media (max-width: 900px) {
+      .nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-mobile { padding: 24px; }
+      .info-bar-title { font-size: 15px; }
+      .info-bar-body.open { max-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">{siteName}<sup>®</sup></a>
+  <div class="nav-links">
+    <a href="/">Trang Chủ</a>
+    <a href="/projects" class="active">Dự Án</a>
+    <a href="/about-us">Về Chúng Tôi</a>
+  </div>
+  <a href="/#contact" class="nav-cta">LIÊN HỆ ↗</a>
+  <button class="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Trang Chủ</a>
+  <a href="/projects">Dự Án</a>
+  <a href="/about-us">Về Chúng Tôi</a>
+  <a href="/#contact">Liên Hệ</a>
+</div>
+
+<!-- SLIDER -->
+<div class="slider" id="slider">
+  {galleryImages.map((url, i) => (
+    <div class="slide" style={`background-image: url('${url}')`} data-index={i}></div>
+  ))}
+</div>
+
+<!-- SLIDE DOTS -->
+{galleryImages.length > 1 && (
+  <div class="slide-counter" id="dots">
+    {galleryImages.map((_, i) => (
+      <div class="dot" data-index={i}></div>
+    ))}
+  </div>
+)}
+
+<!-- INFO BAR -->
+<div class="info-bar" id="infoBar">
+  <div class="info-bar-header" id="infoToggle">
+    <div class="info-bar-title">{p.name}</div>
+    <div class="info-bar-controls">
+      <a href="/projects" class="ctrl-btn" title="Quay lại">⊞</a>
+      <button class="ctrl-btn" id="prevBtn" title="Ảnh trước">‹</button>
+      <button class="ctrl-btn" id="toggleBtn" title="Xem thêm">∨</button>
+      <button class="ctrl-btn" id="nextBtn" title="Ảnh tiếp">›</button>
+    </div>
+  </div>
+  <div class="info-bar-body" id="infoBody">
+    {p.location && <div class="info-item"><div class="info-label">Vị trí</div><div class="info-val">{p.location}</div></div>}
+    {p.area && <div class="info-item"><div class="info-label">Diện tích</div><div class="info-val">{p.area}</div></div>}
+    {p.year && <div class="info-item"><div class="info-label">Năm</div><div class="info-val">{p.year}</div></div>}
+    {p.category && <div class="info-item"><div class="info-label">Hạng mục</div><div class="info-val">{p.category}</div></div>}
+    {p.description && <div class="info-item" style="grid-column: 1/-1"><div class="info-label">Mô tả</div><div class="info-val">{p.description}</div></div>}
+  </div>
+</div>
+
+<script>
+  // Nav toggle
+  const toggle = document.querySelector('.nav-toggle');
+  const mobileNav = document.querySelector('.nav-mobile');
+  toggle?.addEventListener('click', () => mobileNav?.classList.toggle('active'));
+  document.addEventListener('click', e => {
+    if (!toggle?.contains(e.target) && !mobileNav?.contains(e.target))
+      mobileNav?.classList.remove('active');
+  });
+
+  // Slider
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  let current = 0;
+
+  function goTo(index) {
+    slides[current]?.classList.remove('active');
+    dots[current]?.classList.remove('active');
+    current = (index + slides.length) % slides.length;
+    slides[current]?.classList.add('active');
+    dots[current]?.classList.add('active');
+  }
+
+  goTo(0);
+
+  document.getElementById('prevBtn')?.addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nextBtn')?.addEventListener('click', () => goTo(current + 1));
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => goTo(Number(dot.dataset.index)));
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+    if (e.key === 'ArrowRight') goTo(current + 1);
+  });
+
+  // Info toggle — ẩn toàn bộ info bar trừ title + controls
+  const infoBar = document.getElementById('infoBar');
+  const infoBody = document.getElementById('infoBody');
+  const toggleBtn = document.getElementById('toggleBtn');
+  let infoOpen = false;
+
+  toggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    infoOpen = !infoOpen;
+    infoBody?.classList.toggle('open', infoOpen);
+    if (toggleBtn) toggleBtn.textContent = infoOpen ? '∨' : '∧';
+  });
+</script>
+
+</body>
+</html>

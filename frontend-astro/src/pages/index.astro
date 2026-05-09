@@ -8,15 +8,9 @@ async function fetchContentful(contentType, params = '') {
     const res = await fetch(`${CDA}/entries?content_type=${contentType}&include=2${params}`, {
       headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
     });
-    if (!res.ok) {
-      console.error(`Failed to fetch ${contentType}: ${res.status}`);
-      return null;
-    }
+    if (!res.ok) return null;
     return await res.json();
-  } catch (err) {
-    console.error(`Error fetching ${contentType}:`, err.message);
-    return null;
-  }
+  } catch { return null; }
 }
 
 async function fetchAllAssets() {
@@ -25,11 +19,8 @@ async function fetchAllAssets() {
       headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
     });
     if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || [];
-  } catch (err) {
-    return [];
-  }
+    return (await res.json()).items || [];
+  } catch { return []; }
 }
 
 function getAssetUrl(assets, assetId) {
@@ -38,406 +29,186 @@ function getAssetUrl(assets, assetId) {
   return asset ? `https:${asset.fields.file.url}` : null;
 }
 
-// Fetch all data at build time
-const [homepageData, regionsData, statsData, propertiesData, testimonialsData, allAssets] = await Promise.all([
+const [homepageData, testimonialsData, allAssets] = await Promise.all([
   fetchContentful('homepage'),
-  fetchContentful('region'),
-  fetchContentful('statistic', '&order=fields.order'),
-  fetchContentful('property'),
-  fetchContentful('testimonial'),
+  fetchContentful('testimonial', '&limit=3'),
   fetchAllAssets(),
 ]);
 
-const assets = [
-  ...allAssets,
-  ...(homepageData?.includes?.assets || []),
-  ...(propertiesData?.includes?.assets || []),
-  ...(testimonialsData?.includes?.assets || []),
-];
+const h = homepageData?.items?.[0]?.fields || {};
+const siteName = h.siteName || 'StopLab';
+const heroImageUrl = getAssetUrl(allAssets, h.heroImages?.[0]?.sys?.id)
+  || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80';
 
-const hRaw = homepageData?.items?.[0]?.fields || {};
-const h = {
-  siteName: hRaw.siteName || "NEXUS",
-  aboutHeadline: hRaw.aboutHeadline || "We commit ourselves entirely to our partners and the solutions we deliver, bringing unmatched expertise.",
-  aboutDescription: hRaw.aboutDescription || "We are a comprehensive property consultancy specializing in residential and commercial assets.",
-  aboutStat: hRaw.aboutStat || "750+",
-  portalTitle: hRaw.portalTitle || "A PORTAL TO PROFOUND ARCHITECTURAL ENVIRONMENTS",
-  portalSubtitle: hRaw.portalSubtitle || "Transforming visionary designs into tangible forms with flawless execution.",
-  contactTitle: hRaw.contactTitle || "LET'S BUILD THE FUTURE TOGETHER.",
-  contactDescription: hRaw.contactDescription || "Connect with our principal architects and regional directors.",
-  contactEmail: hRaw.contactEmail || "hello@nexus.com",
-  contactPhone: hRaw.contactPhone || "+1 (555) 123-4567",
-  footerTagline: hRaw.footerTagline || "EXCELLENCE // INTEGRATION // LONGEVITY",
-  footerAddress: hRaw.footerAddress || "880 INNOVATION WAY, SUITE 400\nAUSTIN, TEXAS 78701",
-};
-
-const heroImageId = hRaw.heroImages?.[0]?.sys?.id;
-const heroImageUrl = getAssetUrl(assets, heroImageId) || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80';
-
-const regions = regionsData?.items || [];
-const stats = statsData?.items || [];
-const properties = propertiesData?.items || [];
 const testimonials = testimonialsData?.items || [];
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{h.siteName} — Architecture</title>
-    <meta name="description" content={h.aboutDescription}>
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content={`${h.siteName} — Architecture`}>
-    <meta property="og:description" content={h.aboutDescription}>
-    <meta property="og:image" content={heroImageUrl}>
-    <meta property="og:url" content="https://stop-lab.vercel.app">
-    <meta property="og:type" content="website">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content={`${h.siteName} — Architecture`}>
-    <meta name="twitter:description" content={h.aboutDescription}>
-    <meta name="twitter:image" content={heroImageUrl}>
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style is:global>
-        @import '../styles.css';
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{siteName} — Kiến Trúc & Nội Thất</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="description" content={h.contactDescription || 'Thiết kế và thi công kiến trúc, nội thất với tâm huyết'}>
+  <meta property="og:title" content={`${siteName} — Kiến Trúc & Nội Thất`}>
+  <meta property="og:image" content={heroImageUrl}>
+  <meta property="og:type" content="website">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style is:global>
+    @import '../styles-new.css';
+  </style>
 </head>
 <body>
 
-    <!-- NAV -->
-    <nav class="navbar">
-        <button class="mobile-menu-toggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="nav-links">
-            <a href="/">Trang Chủ</a>
-            <a href="#">Dự Án</a>
-            <a href="/ve-chung-toi">Về Chúng Tôi</a>
-            <a href="#">Giải Pháp</a>
-            <a href="#contact">Liên Hệ</a>
-        </div>
-        <a href="#contact" class="nav-cta">LIÊN HỆ NGAY ↗</a>
-    </nav>
-    
-    <div class="mobile-menu">
-        <a href="/">Trang Chủ</a>
-        <a href="#">Dự Án</a>
-        <a href="/ve-chung-toi">Về Chúng Tôi</a>
-        <a href="#">Giải Pháp</a>
-        <a href="#contact">Liên Hệ</a>
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">{siteName}<sup>®</sup></a>
+  <div class="nav-links">
+    <a href="/" class="active">Trang Chủ</a>
+    <a href="/projects">Dự Án</a>
+    <a href="/about-us">Về Chúng Tôi</a>
+  </div>
+  <a href="#contact" class="nav-cta">LIÊN HỆ ↗</a>
+  <button class="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Trang Chủ</a>
+  <a href="/projects">Dự Án</a>
+  <a href="/about-us">Về Chúng Tôi</a>
+  <a href="#contact">Liên Hệ</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg" style={`background-image: url('${heroImageUrl}')`}></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">[ KIẾN TRÚC & NỘI THẤT ]</div>
+    <h1 class="hero-title">{h.heroTitle || 'NHÀ THIẾT KẾ CHUYÊN TÂM'}</h1>
+    <p class="hero-sub">{h.heroSubtitle || 'Kiến tạo không gian với trọn vẹn tâm huyết'}</p>
+    <div class="hero-actions">
+      <a href="/projects" class="btn-primary">XEM DỰ ÁN ↗</a>
+      <a href="#contact" class="btn-ghost">LIÊN HỆ TƯ VẤN</a>
     </div>
+  </div>
+  <div class="hero-scroll">SCROLL ↓</div>
+</section>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-logo">{h.siteName}<sup>®</sup></div>
-        <div class="hero-image">
-            <img id="hero-img" src={heroImageUrl} alt={`${h.siteName} Architecture Hero`}>
-        </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section class="about fade-up">
-        <div class="about-headline">
-            {h.aboutHeadline}
-        </div>
-        <div class="about-body">
-            <div class="about-tag"><span class="dot">●</span> BẢN SẮC</div>
-            <div class="about-desc">
-                <p>{h.aboutDescription}</p>
-                <a href="#contact" class="underline-link">KẾT NỐI VỚI CHÚNG TÔI ↗</a>
+<!-- TESTIMONIALS -->
+{testimonials.length > 0 && (
+  <section class="testimonials-section">
+    <div class="section-label">[ KHÁCH HÀNG NÓI GÌ ]</div>
+    <div class="testimonials-row">
+      {testimonials.map(t => {
+        const avatarUrl = getAssetUrl(allAssets, t.fields.avatar?.sys?.id)
+          || `https://i.pravatar.cc/48?u=${t.fields.authorName}`;
+        return (
+          <div class="testi-card">
+            <p>"{t.fields.quote}"</p>
+            <div class="testi-author">
+              <img src={avatarUrl} alt={t.fields.authorName}>
+              <div>
+                <div class="testi-name">{t.fields.authorName}</div>
+                <div class="testi-role">{t.fields.authorTitle}{t.fields.authorCompany ? `, ${t.fields.authorCompany}` : ''}</div>
+              </div>
             </div>
-            <div class="about-stat">{h.aboutStat}</div>
-        </div>
-        <div class="about-footer">
-            <span>VƯỢT TRÊN BẤT ĐỘNG SẢN THÔNG THƯỜNG.</span>
-            <div class="about-images">
-                {(hRaw.aboutImages || []).map((img: any) => {
-                    const url = getAssetUrl(assets, img?.sys?.id);
-                    return url ? <img src={url} alt=""> : null;
-                })}
-            </div>
-            <span>CHÚNG TÔI XÂY DỰNG NIỀM TIN.</span>
-        </div>
-    </section>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}
 
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-grid">
+    <div class="contact-cell intro-cell">
+      <h2>{h.introTitle || 'nhà thiết kế chuyên tâm'}</h2>
+    </div>
+    <div class="contact-cell desc-cell">
+      <p>{h.introDescription || 'Là người kiến tạo không gian với trọn vẹn tâm huyết, mang đến công trình tinh tế, bền vững và giàu cảm xúc.'}</p>
+    </div>
+    <div class="contact-cell info-cell">
+      <div class="company-name">{h.siteName || 'StopLab'}</div>
+      <div class="company-details">
+        <div>Điện thoại: {h.contactPhone || '+84 (0) 123 456 789'}</div>
+        <div>Email: {h.contactEmail || 'hello@stoplab.vn'}</div>
+        <div set:html={(h.footerAddress || '').replace(/\n/g, '<br>')}></div>
+      </div>
+    </div>
+    <div class="contact-cell form-cell">
+      <div class="form-title">ĐẶT LỊCH TƯ VẤN THIẾT KẾ</div>
+      <div class="contact-form">
+        <div class="form-group"><input id="f-name" type="text" placeholder="Họ tên"></div>
+        <div class="form-group"><input id="f-phone" type="tel" placeholder="Số điện thoại"></div>
+        <div class="form-group"><input id="f-email" type="email" placeholder="Email"></div>
+        <button class="submit-btn">Yêu cầu tư vấn</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- PORTAL -->
-    <section class="portal fade-up">
-        <div class="portal-left">
-            <h2>{h.portalTitle}</h2>
-            <p set:html={h.portalSubtitle}></p>
-            <div class="search-box">
-                <span>📍</span>
-                <input type="text" placeholder="Search region...">
-            </div>
-            <div class="region-tags">
-                {regions.map(r => <span>{r.fields.name.toUpperCase()}</span>)}
-            </div>
-            <div class="portal-bottom">
-                <div class="partner-card">
-                    <div class="partner-label">Đối Tác Chứng Nhận</div>
-                    <div class="partner-name">VANGUARD</div>
-                </div>
-                <div class="partner-info">
-                    <p class="partner-desc">Tận dụng thông tin khu vực sâu rộng và chiến lược lấy đối tác làm trung tâm, chúng tôi dẫn dắt nhà đầu tư một cách liền mạch.</p>
-                    <a href="#" class="underline-link light">KHÁM PHÁ CHI TIẾT ↗</a>
-                </div>
-            </div>
-        </div>
-        <div class="highlight-badge">● BẤT ĐỘNG SẢN NỔI BẬT</div>
-        <div class="portal-right">
-            <div class="portal-decor">
-                <div class="portal-decor-box">
-                    <div class="portal-arrow"></div>
-                    <div class="portal-arrow"></div>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-bg-text">{siteName}</div>
+  <div class="footer-left">
+    <div>THÀNH LẬP '18</div>
+    <div class="footer-copy">BẢO LƯU MỌI QUYỀN.<br>©2024 {siteName}</div>
+  </div>
+  <div class="footer-center">
+    <div>{h.footerTagline || 'XUẤT SẮC // TÍCH HỢP // BỀN VỮNG'}</div>
+    <div set:html={(h.footerAddress || '').replace(/\n/g, '<br>')}></div>
+  </div>
+  <div class="footer-right">
+    <div>DANH MỤC</div>
+    <div class="footer-links">
+      <a href="#">INSTAGRAM</a>
+      <a href="#">FACEBOOK</a>
+    </div>
+    <a href="#">ĐIỀU KHOẢN & BẢO MẬT</a>
+  </div>
+</footer>
 
-    <!-- STATS -->
-    <section class="stats fade-up">
-        {stats.map(s => (
-            <div class="stat-card">
-                <div class="stat-arrow">↗</div>
-                <div class="stat-number">{s.fields.number}<span class="stat-unit">{s.fields.unit || ''}</span></div>
-                <p>{s.fields.description}</p>
-            </div>
-        ))}
-    </section>
+<script>
+  // Nav toggle
+  const toggle = document.querySelector('.nav-toggle');
+  const mobileNav = document.querySelector('.nav-mobile');
+  toggle?.addEventListener('click', () => mobileNav?.classList.toggle('active'));
+  document.addEventListener('click', e => {
+    if (!toggle?.contains(e.target) && !mobileNav?.contains(e.target))
+      mobileNav?.classList.remove('active');
+  });
 
-    <!-- CRAFTED -->
-    <section class="crafted fade-up">
-        <div class="crafted-label">[ TRỤ SỞ TẠI ]</div>
-        <div class="crafted-right">
-            <h2 class="crafted-title">KIẾN TẠO VỚI TÂM HUYẾT</h2>
-            <p class="crafted-desc">Khám phá các tài sản độc quyền tại những khu vực được săn đón nhất. Từ căn hộ đô thị hiện đại đến khu nghỉ dưỡng ẩn mình, chúng tôi tuyển chọn những không gian phù hợp với khát vọng của bạn.</p>
-        </div>
-    </section>
+  // Scroll animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-    <!-- PROPERTIES -->
-    <section class="properties">
-        {properties.slice(0, 2).map(p => {
-            const imgId = p.fields.image?.sys?.id;
-            const imgUrl = getAssetUrl(assets, imgId) || 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&q=80';
-            return (
-                <div class="property-card">
-                    <div class="property-img-wrap">
-                        <img src={imgUrl} alt={p.fields.name}>
-                    </div>
-                    <div class="property-meta">
-                        <span>{p.fields.category}</span>
-                        <span>{p.fields.size || ''}</span>
-                    </div>
-                    <div class="property-name">{p.fields.name}</div>
-                </div>
-            );
-        })}
-    </section>
-
-    <!-- EMBODIES -->
-    <section class="embodies-section">
-        <div class="embodies-stat">
-            <div class="embodies-number">8</div>
-            <div class="embodies-stat-label">NHỮNG NHÀ TIÊN PHONG TỪ<br>XƯỞNG SÁNG TẠO</div>
-        </div>
-        <div class="embodies-center">
-            <h3>HIỆN THÂN<br>BẢN CHẤT THUẦN KHIẾT</h3>
-            <a href="#" class="underline-link light">XEM DANH MỤC ↗</a>
-        </div>
-        {properties[2] && (() => {
-            const p = properties[2];
-            const imgId = p.fields.image?.sys?.id;
-            const imgUrl = getAssetUrl(assets, imgId) || 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&q=80';
-            return (
-                <div class="property-third">
-                    <div class="property-img-wrap">
-                        <img src={imgUrl} alt={p.fields.name}>
-                    </div>
-                    <div class="property-meta">
-                        <span>{p.fields.category}</span>
-                        <span>{p.fields.size || ''}</span>
-                    </div>
-                    <div class="property-name">{p.fields.name}</div>
-                </div>
-            );
-        })()}
-    </section>
-
-
-    <!-- TESTIMONIALS -->
-    <section class="testimonials fade-up">
-        <div class="testimonials-header">
-            <h2>ĐÁNH GIÁ TỪ<br>CÁC ĐỐI TÁC</h2>
-            <span class="bracket-tag">[ GÓC NHÌN KHÁCH HÀNG ]</span>
-        </div>
-        <div class="testimonials-grid">
-            {testimonials.map(t => {
-                const avatarId = t.fields.avatar?.sys?.id;
-                const avatarUrl = getAssetUrl(assets, avatarId) || `https://i.pravatar.cc/40?u=${t.fields.authorName}`;
-                return (
-                    <div class="testimonial-card">
-                        <p>"{t.fields.quote}"</p>
-                        <div class="testimonial-author">
-                            <img src={avatarUrl} alt={t.fields.authorName}>
-                            <div>
-                                <div class="author-name">{t.fields.authorName}</div>
-                                <div class="author-title">{t.fields.authorTitle || ''}{t.fields.authorCompany ? ', ' + t.fields.authorCompany.toUpperCase() : ''}</div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    </section>
-
-    <!-- CONTACT -->
-    <section class="contact fade-up" id="contact">
-        <div class="contact-left">
-            <div class="bracket-tag light">[ BẮT ĐẦU ĐỐI THOẠI ]</div>
-            <h2>{h.contactTitle}</h2>
-            <p>{h.contactDescription}</p>
-            <div class="contact-info">
-                <div>
-                    <div class="info-label">LIÊN HỆ CHUNG</div>
-                    <div class="info-value">{h.contactEmail}</div>
-                </div>
-                <div>
-                    <div class="info-label">ĐƯỜNG DÂY TRỰC TIẾP</div>
-                    <div class="info-value">{h.contactPhone}</div>
-                </div>
-            </div>
-        </div>
-        <div class="contact-form">
-            <div class="form-row">
-                <div class="form-group"><label>HỌ</label><input type="text"></div>
-                <div class="form-group"><label>TÊN</label><input type="text"></div>
-            </div>
-            <div class="form-group"><label>ĐỊA CHỈ EMAIL</label><input type="email"></div>
-            <div class="form-group">
-                <label>LĨNH VỰC QUAN TÂM</label>
-                <select>
-                    <option>Chọn một tùy chọn...</option>
-                    <option>Nhà ở</option>
-                    <option>Thương mại</option>
-                    <option>Phát triển dự án</option>
-                </select>
-            </div>
-            <div class="form-group"><label>TIN NHẮN</label><textarea rows="4"></textarea></div>
-            <div class="form-check">
-                <input type="checkbox" id="terms">
-                <label for="terms">Tôi đồng ý với Điều khoản &amp; Chính sách Bảo mật</label>
-            </div>
-            <button class="submit-btn">GỬI YÊU CẦU ↗</button>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-bg-text">{h.siteName}</div>
-        <div class="footer-left">
-            <div>THÀNH LẬP '18</div>
-            <div class="footer-copy">BẢO LƯU MỌI QUYỀN.<br>©2024 {h.siteName} GROUP</div>
-        </div>
-        <div class="footer-center">
-            <div>{h.footerTagline}</div>
-            <div set:html={h.footerAddress?.replace(/\n/g, '<br>')}></div>
-        </div>
-        <div class="footer-right">
-            <div>DANH MỤC</div>
-            <div class="footer-links">
-                <a href="#">INSTAGRAM</a>
-                <a href="#">LINKEDIN</a>
-            </div>
-            <a href="#">ĐIỀU KHOẢN &amp; BẢO MẬT</a>
-        </div>
-    </footer>
-
-    <script>
-        // Mobile menu toggle
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        const menu = document.querySelector('.mobile-menu');
-        
-        toggle?.addEventListener('click', () => {
-            menu?.classList.toggle('active');
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!toggle?.contains(e.target) && !menu?.contains(e.target)) {
-                menu?.classList.remove('active');
-            }
-        });
-        
-        // Scroll animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-        
-        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-        
-        // Scroll blur effect
-        const handleScroll = () => {
-            document.querySelectorAll('.property-img-wrap img').forEach(img => {
-                const rect = img.getBoundingClientRect();
-                const viewH = window.innerHeight;
-                const imgCenter = rect.top + rect.height / 2;
-                const screenCenter = viewH / 2;
-                const distance = Math.abs(imgCenter - screenCenter);
-                const maxDist = viewH / 2;
-                const blur = Math.min(4, (distance / maxDist) * 4);
-                img.style.filter = `blur(${blur}px)`;
-            });
-        };
-        
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll();
-        
-        // Contact form
-        const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
-        
-        document.querySelector('.submit-btn')?.addEventListener('click', async () => {
-            const firstName = document.querySelector('.form-row .form-group:first-child input').value.trim();
-            const lastName  = document.querySelector('.form-row .form-group:last-child input').value.trim();
-            const email     = document.querySelector('input[type="email"]').value.trim();
-            const area      = document.querySelector('select').value;
-            const message   = document.querySelector('textarea').value.trim();
-            const agreed    = document.getElementById('terms').checked;
-            
-            if (!firstName || !email) {
-                alert('Vui lòng điền Họ và Email.');
-                return;
-            }
-            if (!agreed) {
-                alert('Vui lòng đồng ý với Điều khoản & Chính sách Bảo mật.');
-                return;
-            }
-            
-            const btn = document.querySelector('.submit-btn');
-            btn.textContent = 'ĐANG GỬI...';
-            btn.disabled = true;
-            
-            fetch(SHEET_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, email, areaOfInterest: area, message })
-            });
-            
-            btn.textContent = 'ĐÃ GỬI ✓';
-            document.querySelectorAll('.contact-form input, .contact-form select, .contact-form textarea').forEach(el => el.value = '');
-            document.getElementById('terms').checked = false;
-        });
-    </script>
+  // Contact form
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
+  document.querySelector('.form-cell .submit-btn')?.addEventListener('click', () => {
+    const name = document.getElementById('f-name')?.value.trim();
+    const phone = document.getElementById('f-phone')?.value.trim();
+    const email = document.getElementById('f-email')?.value.trim();
+    console.log('Form data:', { name, phone, email });
+    if (!name || !phone) { alert('Vui lòng điền họ tên và số điện thoại.'); return; }
+    const btn = document.querySelector('.form-cell .submit-btn');
+    btn.textContent = 'Đang gửi...';
+    btn.disabled = true;
+    fetch(SHEET_URL, {
+      method: 'POST', mode: 'no-cors',
+      body: new URLSearchParams({ name, phone, email })
+    });
+    btn.textContent = 'Đã gửi ✓';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-phone').value = '';
+    document.getElementById('f-email').value = '';
+  });
+</script>
 
 </body>
 </html>

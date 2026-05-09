@@ -1,0 +1,150 @@
+---
+const SPACE_ID = 'yo5cnbbvoxyx';
+const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
+
+async function fetchContentful(contentType, params = '') {
+  try {
+    const res = await fetch(`${CDA}/entries?content_type=${contentType}&include=2${params}`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+async function fetchAllAssets() {
+  try {
+    const res = await fetch(`${CDA}/assets?limit=200`, {
+      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+    });
+    if (!res.ok) return [];
+    return (await res.json()).items || [];
+  } catch { return []; }
+}
+
+function getAssetUrl(assets, assetId) {
+  if (!assets || !assetId) return null;
+  const asset = assets.find(a => a.sys.id === assetId);
+  return asset ? `https:${asset.fields.file.url}` : null;
+}
+
+const [homepageData, projectsData, allAssets] = await Promise.all([
+  fetchContentful('homepage'),
+  fetchContentful('project', '&order=-fields.year'),
+  fetchAllAssets(),
+]);
+
+const siteName = homepageData?.items?.[0]?.fields?.siteName || 'StopLab';
+const projects = projectsData?.items || [];
+const categories = ['Tất cả', ...new Set(projects.map(p => p.fields.category).filter(Boolean))];
+---
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dự Án — {siteName}</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style is:global>
+    @import '../styles-new.css';
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">{siteName}<sup>®</sup></a>
+  <div class="nav-links">
+    <a href="/">Trang Chủ</a>
+    <a href="/projects" class="active">Dự Án</a>
+    <a href="/about-us">Về Chúng Tôi</a>
+  </div>
+  <a href="/#contact" class="nav-cta">LIÊN HỆ ↗</a>
+  <button class="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Trang Chủ</a>
+  <a href="/projects">Dự Án</a>
+  <a href="/about-us">Về Chúng Tôi</a>
+  <a href="/#contact">Liên Hệ</a>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-tag">[ DỰ ÁN ]</div>
+  <h1>DANH MỤC CÔNG TRÌNH</h1>
+  <p>Khám phá các dự án kiến trúc và nội thất tiêu biểu của chúng tôi</p>
+</div>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  {categories.map(cat => (
+    <button class={`filter-btn ${cat === 'Tất cả' ? 'active' : ''}`} data-cat={cat}>{cat}</button>
+  ))}
+</div>
+
+<!-- PROJECTS GRID -->
+<section class="projects-full">
+  {projects.map(p => {
+    const imgUrl = getAssetUrl(allAssets, p.fields.coverImage?.sys?.id)
+      || 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80';
+    return (
+      <a href={`/project/${p.fields.slug || p.sys.id}`}
+         class="project-item"
+         data-cat={p.fields.category || ''}>
+        <div class="project-item-img" style={`background-image: url('${imgUrl}')`}>
+          <div class="project-item-overlay">
+            <span>XEM DỰ ÁN ↗</span>
+          </div>
+        </div>
+        <div class="project-item-info">
+          <div class="project-cat">{p.fields.category}</div>
+          <div class="project-name">{p.fields.name}</div>
+          <div class="project-meta">
+            {p.fields.location && <span>{p.fields.location}</span>}
+            {p.fields.year && <span>· {p.fields.year}</span>}
+            {p.fields.area && <span>· {p.fields.area}</span>}
+          </div>
+        </div>
+      </a>
+    );
+  })}
+</section>
+
+<script>
+  // Nav toggle
+  const toggle = document.querySelector('.nav-toggle');
+  const mobileNav = document.querySelector('.nav-mobile');
+  toggle?.addEventListener('click', () => mobileNav?.classList.toggle('active'));
+  document.addEventListener('click', e => {
+    if (!toggle?.contains(e.target) && !mobileNav?.contains(e.target))
+      mobileNav?.classList.remove('active');
+  });
+
+  // Filter
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const projectItems = document.querySelectorAll('.project-item');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      projectItems.forEach(item => {
+        if (cat === 'Tất cả' || item.dataset.cat === cat) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
