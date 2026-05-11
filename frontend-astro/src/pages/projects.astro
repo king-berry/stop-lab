@@ -47,6 +47,22 @@ const categories = ['Tất cả', ...new Set(projects.map(p => p.fields.category
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dự Án — {siteName}</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="description" content={`Danh mục dự án kiến trúc và nội thất — ${siteName}`}>
+
+  <!-- OG Meta Tags -->
+  <meta property="og:title" content={`Dự Án — ${siteName}`}>
+  <meta property="og:description" content={`Danh mục dự án kiến trúc và nội thất — ${siteName}`}>
+  <meta property="og:image" content="https://stoplab.vn/STOPLAB_LOGO-32.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={`Dự Án — ${siteName}`}>
+  <meta name="twitter:description" content={`Danh mục dự án kiến trúc và nội thất — ${siteName}`}>
+  <meta name="twitter:image" content="https://stoplab.vn/STOPLAB_LOGO-32.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style is:global>
     @import '../styles-new.css';
@@ -56,7 +72,7 @@ const categories = ['Tất cả', ...new Set(projects.map(p => p.fields.category
 
 <!-- NAV -->
 <nav class="nav">
-  <a href="/" class="nav-logo">{siteName}<sup>®</sup></a>
+  <a href="/" class="nav-logo"><img src="/STOPLAB_LOGO-32.png" alt={siteName} class="nav-logo-img"></a>
   <div class="nav-links">
     <a href="/">Trang Chủ</a>
     <a href="/projects" class="active">Dự Án</a>

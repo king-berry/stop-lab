@@ -61,7 +61,22 @@ const galleryImages = [
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{p.name} — {siteName}</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="description" content={p.description || `${p.name} — ${siteName}`}>
+
+  <!-- OG Meta Tags -->
+  <meta property="og:title" content={`${p.name} — ${siteName}`}>
+  <meta property="og:description" content={p.description || `${p.name} — ${siteName}`}>
   <meta property="og:image" content={coverUrl}>
+  <meta property="og:image:width" content="1600">
+  <meta property="og:image:height" content="900">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={`${p.name} — ${siteName}`}>
+  <meta name="twitter:description" content={p.description || `${p.name} — ${siteName}`}>
+  <meta name="twitter:image" content={coverUrl}>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,6 +119,14 @@ const galleryImages = [
       letter-spacing: -0.5px;
       color: var(--white);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-logo-img {
+      height: 32px;
+      width: auto;
+      display: block;
     }
 
     .nav-logo sup { font-size: 0.5em; vertical-align: super; }
@@ -314,7 +337,7 @@ const galleryImages = [
 
 <!-- NAV -->
 <nav class="nav">
-  <a href="/" class="nav-logo">{siteName}<sup>®</sup></a>
+  <a href="/" class="nav-logo"><img src="/STOPLAB_LOGO-32.png" alt={siteName} class="nav-logo-img"></a>
   <div class="nav-links">
     <a href="/">Trang Chủ</a>
     <a href="/projects" class="active">Dự Án</a>
