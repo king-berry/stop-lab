@@ -1,4 +1,6 @@
 ---
+import { resolveNavLogoUrl } from '../lib/navLogo';
+
 const SPACE_ID = 'yo5cnbbvoxyx';
 const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
@@ -40,6 +42,7 @@ const [homepageData, statsData, aboutData, allAssets] = await Promise.all([
 
 const hRaw = homepageData?.items?.[0]?.fields || {};
 const siteName = hRaw.siteName || 'StopLab';
+const navLogoUrl = resolveNavLogoUrl(hRaw, allAssets);
 const stats = statsData?.items || [];
 
 const aRaw = aboutData?.items?.[0]?.fields || {};
@@ -315,7 +318,7 @@ const a = {
 
   <!-- NAV -->
   <nav class="nav">
-    <a href="/" class="nav-logo"><img src="/STOPLAB_LOGO-32.png" alt={siteName} class="nav-logo-img"></a>
+    <a href="/" class="nav-logo"><img src={navLogoUrl} alt={siteName} class="nav-logo-img" loading="eager" decoding="async"></a>
     <div class="nav-links">
       <a href="/">Trang Chủ</a>
       <a href="/projects">Dự Án</a>

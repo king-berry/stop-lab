@@ -1,4 +1,6 @@
 ---
+import { resolveNavLogoUrl } from '../lib/navLogo';
+
 const SPACE_ID = 'yo5cnbbvoxyx';
 const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
@@ -40,6 +42,8 @@ const siteName = h.siteName || 'StopLab';
 const heroImageUrl = getAssetUrl(allAssets, h.heroImages?.[0]?.sys?.id)
   || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80';
 
+const navLogoUrl = resolveNavLogoUrl(h, allAssets);
+
 const testimonials = testimonialsData?.items || [];
 ---
 
@@ -70,12 +74,17 @@ const testimonials = testimonialsData?.items || [];
   <style is:global>
     @import '../styles-new.css';
   </style>
+  <style>
+    .form-group.has-error input { border-color: #b94a48 !important; }
+    .form-group .field-error { display: none; color: #b94a48; font-size: 12px; margin-top: 6px; }
+    .form-group.has-error .field-error { display: block; }
+  </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav class="nav">
-  <a href="/" class="nav-logo"><img src="/STOPLAB_LOGO-32.png" alt={siteName} class="nav-logo-img"></a>
+  <a href="/" class="nav-logo"><img src={navLogoUrl} alt={siteName} class="nav-logo-img" loading="eager" decoding="async"></a>
   <div class="nav-links">
     <a href="/" class="active">Trang Chủ</a>
     <a href="/projects">Dự Án</a>
@@ -99,7 +108,7 @@ const testimonials = testimonialsData?.items || [];
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-tag">[ KIẾN TRÚC & NỘI THẤT ]</div>
-    <h1 class="hero-title">{h.heroTitle || 'NHÀ THIẾT KẾ CHUYÊN TÂM'}</h1>
+    <h1 class="hero-title">{h.heroTitle || 'ĐIỂM TỰA CỦA KHÔNG GIAN HOÀN MỸ'}</h1>
     <p class="hero-sub">{h.heroSubtitle || 'Kiến tạo không gian với trọn vẹn tâm huyết'}</p>
     <div class="hero-actions">
       <a href="/projects" class="btn-primary">XEM DỰ ÁN ↗</a>
@@ -154,10 +163,19 @@ const testimonials = testimonialsData?.items || [];
     <div class="contact-cell form-cell">
       <div class="form-title">ĐẶT LỊCH TƯ VẤN THIẾT KẾ</div>
       <div class="contact-form">
-        <div class="form-group"><input id="f-name" type="text" placeholder="Họ tên"></div>
-        <div class="form-group"><input id="f-phone" type="tel" placeholder="Số điện thoại"></div>
-        <div class="form-group"><input id="f-email" type="email" placeholder="Email"></div>
-        <button class="submit-btn">Yêu cầu tư vấn</button>
+        <div class="form-group" id="fg-name">
+          <input id="f-name" type="text" placeholder="Họ tên" autocomplete="name" maxlength="80" aria-describedby="err-name">
+          <div class="field-error" id="err-name">Nhập họ tên (ít nhất 2 ký tự, chỉ chữ cái và khoảng trắng).</div>
+        </div>
+        <div class="form-group" id="fg-phone">
+          <input id="f-phone" type="tel" placeholder="Số điện thoại (VD: 0912345678)" inputmode="tel" autocomplete="tel" aria-describedby="err-phone">
+          <div class="field-error" id="err-phone">Số điện thoại Việt Nam không hợp lệ (10 số, đầu 0 hoặc +84).</div>
+        </div>
+        <div class="form-group" id="fg-email">
+          <input id="f-email" type="email" placeholder="Email (tùy chọn)" autocomplete="email" aria-describedby="err-email">
+          <div class="field-error" id="err-email">Email không đúng định dạng.</div>
+        </div>
+        <button type="button" class="submit-btn">Yêu cầu tư vấn</button>
       </div>
     </div>
   </div>
@@ -200,14 +218,56 @@ const testimonials = testimonialsData?.items || [];
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-  // Contact form
+  // Contact form — field validation
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxiRf-SrWQmnw1LOXXLKFOPH0IWBcLC4y6lyoaGYRgjwLRj1xpVh9-QJ-Q1Xy4dydpFQw/exec';
+
+  function clearFormErrors() {
+    ['fg-name', 'fg-phone', 'fg-email'].forEach((id) => document.getElementById(id)?.classList.remove('has-error'));
+  }
+
+  function isValidName(s) {
+    if (s.length < 2 || s.length > 80) return false;
+    return /^[\p{L}\s'.-]+$/u.test(s);
+  }
+
+  function normalizePhone(s) {
+    return s.replace(/[\s().-]/g, '');
+  }
+
+  function isValidVNPhone(s) {
+    const n = normalizePhone(s);
+    return /^(\+84|84|0)(3|5|7|8|9)\d{8}$/.test(n);
+  }
+
+  function isValidEmail(s) {
+    if (!s) return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(s);
+  }
+
   document.querySelector('.form-cell .submit-btn')?.addEventListener('click', () => {
-    const name = document.getElementById('f-name')?.value.trim();
-    const phone = document.getElementById('f-phone')?.value.trim();
-    const email = document.getElementById('f-email')?.value.trim();
-    console.log('Form data:', { name, phone, email });
-    if (!name || !phone) { alert('Vui lòng điền họ tên và số điện thoại.'); return; }
+    clearFormErrors();
+    const name = document.getElementById('f-name')?.value.trim() ?? '';
+    const phone = document.getElementById('f-phone')?.value.trim() ?? '';
+    const email = document.getElementById('f-email')?.value.trim() ?? '';
+
+    let ok = true;
+    if (!isValidName(name)) {
+      document.getElementById('fg-name')?.classList.add('has-error');
+      ok = false;
+    }
+    if (!isValidVNPhone(phone)) {
+      document.getElementById('fg-phone')?.classList.add('has-error');
+      ok = false;
+    }
+    if (!isValidEmail(email)) {
+      document.getElementById('fg-email')?.classList.add('has-error');
+      ok = false;
+    }
+    if (!ok) {
+      alert('Vui lòng sửa các trường được đánh dấu đỏ.');
+      return;
+    }
+
     const btn = document.querySelector('.form-cell .submit-btn');
     btn.textContent = 'Đang gửi...';
     btn.disabled = true;
@@ -219,6 +279,14 @@ const testimonials = testimonialsData?.items || [];
     document.getElementById('f-name').value = '';
     document.getElementById('f-phone').value = '';
     document.getElementById('f-email').value = '';
+    btn.disabled = false;
+  });
+
+  ['f-name', 'f-phone', 'f-email'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const fg = document.getElementById(id)?.closest('.form-group');
+      fg?.classList.remove('has-error');
+    });
   });
 </script>
 
