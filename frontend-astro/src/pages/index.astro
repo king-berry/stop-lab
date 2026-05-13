@@ -1,8 +1,8 @@
 ---
 import { resolveNavLogoUrl } from '../lib/navLogo';
 
-const SPACE_ID = 'yo5cnbbvoxyx';
-const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const SPACE_ID = 'mxbxklkhnsmb';
+const ACCESS_TOKEN = '9bAfBNZ3O0TIsS9BVeKEjuSKrAn7aEIDIMP_wodcJSs';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
 
 async function fetchContentful(contentType, params = '') {
@@ -42,7 +42,8 @@ const siteName = h.siteName || 'StopLab';
 const heroImageUrl = getAssetUrl(allAssets, h.heroImages?.[0]?.sys?.id)
   || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80';
 
-const navLogoUrl = resolveNavLogoUrl(h, allAssets);
+const homepageIncludes = homepageData?.includes?.Asset ?? [];
+const navLogoUrl = resolveNavLogoUrl(h, allAssets, homepageIncludes);
 
 const testimonials = testimonialsData?.items || [];
 ---

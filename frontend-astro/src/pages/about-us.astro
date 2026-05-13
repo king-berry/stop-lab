@@ -1,8 +1,8 @@
 ---
 import { resolveNavLogoUrl } from '../lib/navLogo';
 
-const SPACE_ID = 'yo5cnbbvoxyx';
-const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const SPACE_ID = 'mxbxklkhnsmb';
+const ACCESS_TOKEN = '9bAfBNZ3O0TIsS9BVeKEjuSKrAn7aEIDIMP_wodcJSs';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
 
 async function fetchContentful(contentType, params = '') {
@@ -42,11 +42,40 @@ const [homepageData, statsData, aboutData, allAssets] = await Promise.all([
 
 const hRaw = homepageData?.items?.[0]?.fields || {};
 const siteName = hRaw.siteName || 'StopLab';
-const navLogoUrl = resolveNavLogoUrl(hRaw, allAssets);
+const homepageIncludes = homepageData?.includes?.Asset ?? [];
+const navLogoUrl = resolveNavLogoUrl(hRaw, allAssets, homepageIncludes);
 const stats = statsData?.items || [];
 
 const aRaw = aboutData?.items?.[0]?.fields || {};
 const heroImageUrl = getAssetUrl(allAssets, aRaw.heroImage?.sys?.id);
+
+const fallbackValueCards = [
+  {
+    title: 'Chuyên Tâm',
+    description: 'Luôn đặt sự tận tâm và trách nhiệm lên hàng đầu trong từng dự án.',
+  },
+  {
+    title: 'Đồng Hành',
+    description: 'Luôn sát cánh cùng khách hàng trong suốt hành trình từ ý tưởng đến hoàn thiện.',
+  },
+  {
+    title: 'Tử Tế',
+    description: 'Làm việc bằng sự chân thành, minh bạch, trách nhiệm và tôn trọng lẫn nhau.',
+  },
+];
+
+const valuesItems = Array.isArray(aRaw.valuesItems)
+  ? aRaw.valuesItems.filter((item) => typeof item === 'string')
+  : [];
+const valuesDescriptions = Array.isArray(aRaw.valuesDescription)
+  ? aRaw.valuesDescription.filter((item) => typeof item === 'string')
+  : [];
+const valuesCards = valuesItems
+  .map((title, i) => ({
+    title,
+    description: valuesDescriptions[i] || '',
+  }))
+  .filter((card) => card.title || card.description);
 
 const a = {
   heroTitle: aRaw.heroTitle || 'KIẾN TẠO BẰNG TÂM HUYẾT VÀ SỰ CHUYÊN NGHIỆP',
@@ -58,6 +87,7 @@ const a = {
   missionTitle: aRaw.missionTitle || 'Cam kết của chúng tôi',
   missionItems: aRaw.missionItems || [],
   valuesTitle: aRaw.valuesTitle || 'Những gì chúng tôi tin tưởng',
+  valuesCards: valuesCards.length > 0 ? valuesCards : fallbackValueCards,
 };
 ---
 
@@ -403,18 +433,12 @@ const a = {
     </div>
     <div class="about-section-inner">
       <div class="values-grid">
-        <div class="value-card">
-          <h3>Chuyên Tâm</h3>
-          <p>Luôn đặt sự tận tâm và trách nhiệm lên hàng đầu trong từng dự án.</p>
-        </div>
-        <div class="value-card">
-          <h3>Đồng Hành</h3>
-          <p>Luôn sát cánh cùng khách hàng trong suốt hành trình từ ý tưởng đến hoàn thiện.</p>
-        </div>
-        <div class="value-card">
-          <h3>Tử Tế</h3>
-          <p>Làm việc bằng sự chân thành, minh bạch, trách nhiệm và tôn trọng lẫn nhau.</p>
-        </div>
+        {a.valuesCards.map((card: { title: string; description: string }) => (
+          <div class="value-card">
+            <h3>{card.title}</h3>
+            <p>{card.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   </div>

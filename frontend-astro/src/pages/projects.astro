@@ -1,8 +1,8 @@
 ---
 import { resolveNavLogoUrl } from '../lib/navLogo';
 
-const SPACE_ID = 'yo5cnbbvoxyx';
-const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const SPACE_ID = 'mxbxklkhnsmb';
+const ACCESS_TOKEN = '9bAfBNZ3O0TIsS9BVeKEjuSKrAn7aEIDIMP_wodcJSs';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
 
 async function fetchContentful(contentType, params = '') {
@@ -39,7 +39,8 @@ const [homepageData, projectsData, allAssets] = await Promise.all([
 
 const h = homepageData?.items?.[0]?.fields || {};
 const siteName = h.siteName || 'StopLab';
-const navLogoUrl = resolveNavLogoUrl(h, allAssets);
+const homepageIncludes = homepageData?.includes?.Asset ?? [];
+const navLogoUrl = resolveNavLogoUrl(h, allAssets, homepageIncludes);
 const projects = projectsData?.items || [];
 const categories = ['Tất cả', ...new Set(projects.map(p => p.fields.category).filter(Boolean))];
 ---

@@ -1,8 +1,8 @@
 ---
 import { resolveNavLogoUrl } from '../../lib/navLogo';
 
-const SPACE_ID = 'yo5cnbbvoxyx';
-const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+const SPACE_ID = 'mxbxklkhnsmb';
+const ACCESS_TOKEN = '9bAfBNZ3O0TIsS9BVeKEjuSKrAn7aEIDIMP_wodcJSs';
 const CDA = `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master`;
 
 async function fetchAllAssets() {
@@ -22,8 +22,8 @@ function getAssetUrl(assets, assetId) {
 }
 
 export async function getStaticPaths() {
-  const SPACE_ID = 'yo5cnbbvoxyx';
-  const ACCESS_TOKEN = 'U5q6mGZBvntULz0tlWA-KnKvMIcDFuigHEuQBOu5kzo';
+  const SPACE_ID = 'mxbxklkhnsmb';
+  const ACCESS_TOKEN = '9bAfBNZ3O0TIsS9BVeKEjuSKrAn7aEIDIMP_wodcJSs';
   const res = await fetch(
     `https://cdn.contentful.com/spaces/${SPACE_ID}/environments/master/entries?content_type=project&include=2`,
     { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
@@ -40,13 +40,14 @@ const allAssets = await fetchAllAssets();
 
 // Fetch siteName
 const homepageRes = await fetch(
-  `${CDA}/entries?content_type=homepage&limit=1`,
+  `${CDA}/entries?content_type=homepage&limit=1&include=2`,
   { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
 );
 const homepageData = await homepageRes.json();
 const hHome = homepageData?.items?.[0]?.fields || {};
+const homepageIncludes = homepageData?.includes?.Asset ?? [];
 const siteName = hHome.siteName || 'StopLab';
-const navLogoUrl = resolveNavLogoUrl(hHome, allAssets);
+const navLogoUrl = resolveNavLogoUrl(hHome, allAssets, homepageIncludes);
 
 const p = project.fields;
 const coverUrl = getAssetUrl(allAssets, p.coverImage?.sys?.id)
